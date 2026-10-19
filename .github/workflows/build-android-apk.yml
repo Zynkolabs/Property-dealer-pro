@@ -1,4 +1,4 @@
-name: Build Property Dealer Pro APK
+name: Build Property Dealer Pro Release Package
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-apk:
+  build-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,16 +33,23 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build debug APK
+      - name: Build unsigned release APK
         working-directory: android-app
-        run: gradle :app:assembleDebug --stacktrace
+        run: gradle :app:assembleRelease --stacktrace
 
-      - name: Rename APK
-        run: cp android-app/app/build/outputs/apk/debug/app-debug.apk Property-Dealer-Pro-v1.0-test.apk
+      - name: Prepare release signing package
+        shell: bash
+        run: |
+          mkdir -p release-package/signing-tools/lib
+          cp android-app/app/build/outputs/apk/release/app-release-unsigned.apk release-package/Property-Dealer-Pro-v1.0-release-unsigned.apk
+          cp "$ANDROID_HOME/build-tools/35.0.0/apksigner" release-package/signing-tools/apksigner
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" release-package/signing-tools/lib/apksigner.jar
+          cp "$ANDROID_HOME/build-tools/35.0.0/zipalign" release-package/signing-tools/zipalign
+          chmod +x release-package/signing-tools/apksigner release-package/signing-tools/zipalign
 
-      - name: Upload APK
+      - name: Upload unsigned release and signing tools
         uses: actions/upload-artifact@v4
         with:
-          name: Property-Dealer-Pro-Android-APK
-          path: Property-Dealer-Pro-v1.0-test.apk
+          name: Property-Dealer-Pro-Release-Unsigned
+          path: release-package/
           if-no-files-found: error
