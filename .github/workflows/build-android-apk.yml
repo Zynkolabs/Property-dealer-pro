@@ -1,4 +1,4 @@
-name: Build Property Dealer Pro Release Package
+name: Build Property Dealer Pro v1.1 Device Locked
 
 on:
   push:
@@ -33,23 +33,68 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build unsigned release APK
+      - name: Add offline Android device-locked licensing v1.1
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          java = Path('android-app/app/src/main/java/com/zynkolabs/propertydealerpro/MainActivity.java')
+          html = Path('android-app/app/src/main/assets/index.html')
+          gradle = Path('android-app/app/build.gradle')
+
+          s = java.read_text()
+          if 'import android.provider.Settings;' not in s:
+              s = s.replace('import android.provider.MediaStore;\n', 'import android.provider.MediaStore;\nimport android.provider.Settings;\n')
+          if 'import android.content.SharedPreferences;' not in s:
+              s = s.replace('import android.content.Intent;\n', 'import android.content.Intent;\nimport android.content.SharedPreferences;\n')
+          if 'import java.security.MessageDigest;' not in s:
+              s = s.replace('import java.nio.charset.StandardCharsets;\n', 'import java.nio.charset.StandardCharsets;\nimport java.security.MessageDigest;\nimport java.util.Locale;\nimport java.util.UUID;\n')
+          if 'public String getDeviceId()' not in s:
+              s = s.replace('    public class AndroidBridge {\n', '''    public class AndroidBridge {\n        @JavascriptInterface\n        public String getDeviceId() {\n            return buildDeviceCode();\n        }\n\n''', 1)
+          if 'private String buildDeviceCode()' not in s:
+              helper = '''    private String buildDeviceCode() {\n        try {\n            String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);\n            if (androidId == null || androidId.trim().isEmpty()) {\n                SharedPreferences prefs = getSharedPreferences("zynko_device_identity", MODE_PRIVATE);\n                androidId = prefs.getString("fallback_id", null);\n                if (androidId == null || androidId.trim().isEmpty()) {\n                    androidId = UUID.randomUUID().toString();\n                    prefs.edit().putString("fallback_id", androidId).apply();\n                }\n            }\n            MessageDigest digest = MessageDigest.getInstance("SHA-256");\n            byte[] hash = digest.digest(("ZYNKO-DEVICE-V2|" + androidId).getBytes(StandardCharsets.UTF_8));\n            StringBuilder hex = new StringBuilder();\n            for (byte b : hash) hex.append(String.format(Locale.US, "%02X", b));\n            String h = hex.substring(0, 24);\n            return "DEV-" + h.substring(0, 6) + "-" + h.substring(6, 12) + "-" + h.substring(12, 18) + "-" + h.substring(18, 24);\n        } catch (Exception e) {\n            return "DEV-000000-000000-000000-000000";\n        }\n    }\n\n'''
+              s = s.replace('    private String sanitizeFilename', helper + '    private String sanitizeFilename', 1)
+          s = s.replace("<b>Important:</b> the license is tied to this app and this Device ID. If app data is cleared or the app is reinstalled, a new activation may be required.", "<b>Offline protection:</b> the license is tied to this app and this Android device. It works without internet and is rejected on a different phone.")
+          java.write_text(s)
+
+          s = html.read_text()
+          old_device = "function getDeviceId(){let d='';try{d=localStorage.getItem(DEV_KEY)||''}catch(e){}if(!d){d=randomDeviceId();try{localStorage.setItem(DEV_KEY,d)}catch(e){}}return d}"
+          new_device = """function getLegacyDeviceId(){let d='';try{d=localStorage.getItem(DEV_KEY)||''}catch(e){}return d}\n  function getDeviceId(){\n    try{if(window.AndroidBridge&&typeof AndroidBridge.getDeviceId==='function'){const n=String(AndroidBridge.getDeviceId()||'').trim().toUpperCase();if(/^DEV-[A-F0-9]{6}-[A-F0-9]{6}-[A-F0-9]{6}-[A-F0-9]{6}$/.test(n)&&n!=='DEV-000000-000000-000000-000000')return n}}catch(e){}\n    let d=getLegacyDeviceId();if(!d){d=randomDeviceId();try{localStorage.setItem(DEV_KEY,d)}catch(e){}}return d\n  }"""
+          old_check = "if(payload.d!==deviceId)throw new Error('This license belongs to another device.');"
+          new_check = "const legacyDeviceId=getLegacyDeviceId();if(payload.d!==deviceId&&(!legacyDeviceId||payload.d!==legacyDeviceId))throw new Error('This license belongs to another device.');"
+          if old_device not in s or old_check not in s:
+              raise SystemExit('Could not patch Property Dealer Pro license gate')
+          s = s.replace(old_device, new_device, 1)
+          s = s.replace(old_check, new_check, 1)
+          s = s.replace('This copy is protected with a signed one-device license. Send the Device ID below to the seller, then paste the activation license you receive.', 'This copy is protected with an offline device-locked license. Send the Device ID below to the seller, then paste the activation license you receive. The same license cannot activate a different phone.')
+          s = s.replace('<b>Important:</b> the license is tied to this app and this Device ID. If browser/site data is cleared, a new activation may be required.', '<b>Offline protection:</b> the license is tied to this app and this Android device. It works without internet and will be rejected on a different phone. After reinstall or app-data reset, paste the same license again if requested.')
+          html.write_text(s)
+
+          s = gradle.read_text()
+          s = s.replace('versionCode 1', 'versionCode 2')
+          s = s.replace("versionName '1.0.0'", 'versionName "1.1.0"')
+          s = s.replace('versionName "1.0.0"', 'versionName "1.1.0"')
+          gradle.write_text(s)
+          PY
+
+      - name: Build unsigned v1.1 release APK
         working-directory: android-app
         run: gradle :app:assembleRelease --stacktrace
 
-      - name: Prepare release signing package
+      - name: Prepare v1.1 release signing package
         shell: bash
         run: |
           mkdir -p release-package/signing-tools/lib
-          cp android-app/app/build/outputs/apk/release/app-release-unsigned.apk release-package/Property-Dealer-Pro-v1.0-release-unsigned.apk
+          cp android-app/app/build/outputs/apk/release/app-release-unsigned.apk release-package/Property-Dealer-Pro-v1.1-release-unsigned.apk
           cp "$ANDROID_HOME/build-tools/35.0.0/apksigner" release-package/signing-tools/apksigner
           cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" release-package/signing-tools/lib/apksigner.jar
           cp "$ANDROID_HOME/build-tools/35.0.0/zipalign" release-package/signing-tools/zipalign
           chmod +x release-package/signing-tools/apksigner release-package/signing-tools/zipalign
 
-      - name: Upload unsigned release and signing tools
+      - name: Upload v1.1 unsigned release and signing tools
         uses: actions/upload-artifact@v4
         with:
-          name: Property-Dealer-Pro-Release-Unsigned
+          name: Property-Dealer-Pro-v1.1-DeviceLocked-Unsigned
           path: release-package/
           if-no-files-found: error
