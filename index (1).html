@@ -1,0 +1,1376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Property Dealer Pro</title>
+
+<style>
+:root{
+  --bg:#f4f8f7;
+  --text:#10211e;
+  --muted:#6e7c79;
+  --line:rgba(15,118,110,.10);
+  --green:#0f766e;
+  --teal:#14b8a6;
+  --cyan:#06b6d4;
+  --blue:#2563eb;
+  --sky:#38bdf8;
+  --gold:#f59e0b;
+  --orange:#f97316;
+  --rose:#e11d48;
+  --violet:#7c3aed;
+  --surface:rgba(255,255,255,.86);
+  --surface-strong:rgba(255,255,255,.96);
+  --shadow:0 20px 60px rgba(15,118,110,.12);
+  --shadow-soft:0 10px 30px rgba(15,118,110,.08);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 8% -3%,rgba(20,184,166,.18),transparent 27%),
+    radial-gradient(circle at 98% 2%,rgba(245,158,11,.12),transparent 26%),
+    radial-gradient(circle at 54% 48%,rgba(37,99,235,.06),transparent 32%),
+    linear-gradient(180deg,#fcfffe 0%,#f6faf9 50%,#f2f7f6 100%);
+  overflow-x:hidden;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 78%,rgba(124,58,237,.04),transparent 24%),
+    radial-gradient(circle at 86% 82%,rgba(6,182,212,.05),transparent 22%);
+  z-index:-1;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:auto;min-height:100vh;padding:14px 14px 110px}
+.hidden{display:none!important}
+
+/* HERO */
+header{
+  position:relative;
+  overflow:hidden;
+  padding:23px;
+  border-radius:32px;
+  color:#fff;
+  background:
+    linear-gradient(128deg,#064e3b 0%,#0f766e 28%,#0891b2 62%,#2563eb 100%);
+  box-shadow:
+    0 28px 70px rgba(15,118,110,.28),
+    inset 0 1px 0 rgba(255,255,255,.22);
+  animation:heroEnter .7s cubic-bezier(.2,.85,.2,1) both;
+}
+header:before,
+header:after{
+  content:"";
+  position:absolute;
+  border-radius:999px;
+  pointer-events:none;
+}
+header:before{
+  width:260px;height:260px;
+  right:-100px;top:-118px;
+  background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.28),rgba(255,255,255,.06) 42%,transparent 70%);
+  animation:orbOne 9s ease-in-out infinite;
+}
+header:after{
+  width:210px;height:210px;
+  left:-90px;bottom:-128px;
+  background:radial-gradient(circle at 60% 40%,rgba(250,204,21,.30),rgba(255,255,255,.04) 48%,transparent 70%);
+  animation:orbTwo 11s ease-in-out infinite;
+}
+.title{
+  font-size:28px;
+  font-weight:950;
+  letter-spacing:-.7px;
+  position:relative;
+  z-index:1;
+  text-shadow:0 3px 14px rgba(0,0,0,.10);
+}
+.sub{
+  font-size:13.5px;
+  color:rgba(255,255,255,.90);
+  line-height:1.5;
+  margin-top:6px;
+  position:relative;
+  z-index:1;
+  max-width:600px;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-top:18px;
+  position:relative;
+  z-index:1;
+}
+.stat{
+  position:relative;
+  overflow:hidden;
+  padding:13px 9px;
+  border-radius:20px;
+  background:linear-gradient(145deg,rgba(255,255,255,.21),rgba(255,255,255,.10));
+  border:1px solid rgba(255,255,255,.20);
+  backdrop-filter:blur(15px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 8px 20px rgba(6,78,59,.07);
+  animation:statPop .55s cubic-bezier(.2,.8,.2,1) both;
+  transition:transform .22s cubic-bezier(.2,.8,.2,1);
+}
+.stat:nth-child(2){animation-delay:.06s}
+.stat:nth-child(3){animation-delay:.12s}
+.stat:nth-child(4){animation-delay:.18s}
+.stat:active{transform:scale(.965)}
+.stat:after{
+  content:"";
+  position:absolute;
+  width:68px;height:68px;
+  right:-28px;top:-34px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+}
+.stat b{display:block;font-size:21px;letter-spacing:-.35px}
+.stat span{font-size:10px;color:rgba(255,255,255,.88);font-weight:800}
+
+/* SECTIONS */
+.view{animation:viewIn .38s cubic-bezier(.2,.8,.2,1) both}
+.section{margin-top:22px}
+.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:0 2px 12px;
+}
+.section-head h2{
+  margin:0;
+  font-size:21px;
+  letter-spacing:-.4px;
+}
+.btn{
+  border:0;
+  border-radius:16px;
+  padding:11px 14px;
+  font-weight:900;
+  transition:
+    transform .16s cubic-bezier(.2,.8,.2,1),
+    box-shadow .22s ease,
+    filter .22s ease;
+}
+.btn:active{transform:scale(.955)}
+.btn-primary{
+  color:#fff;
+  background:linear-gradient(135deg,#0f766e,#14b8a6 48%,#0ea5e9);
+  box-shadow:
+    0 11px 24px rgba(15,118,110,.23),
+    inset 0 1px 0 rgba(255,255,255,.24);
+}
+.btn-primary:hover{filter:saturate(1.08) brightness(1.02)}
+.btn-small{padding:10px 12px;font-size:14px}
+.btn-light{
+  background:rgba(255,255,255,.95);
+  border:1px solid var(--line);
+  color:var(--text);
+  box-shadow:0 6px 18px rgba(15,118,110,.05);
+}
+
+/* INPUTS */
+.search{margin:11px 0}
+.search input,
+input,select,textarea{
+  width:100%;
+  border:1px solid rgba(15,118,110,.14);
+  border-radius:17px;
+  padding:13px 14px;
+  font-size:16px;
+  background:rgba(255,255,255,.94);
+  color:var(--text);
+  outline:none;
+  box-shadow:0 7px 22px rgba(15,118,110,.045);
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .15s ease,
+    background .2s ease;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#14b8a6;
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(20,184,166,.10),0 12px 28px rgba(15,118,110,.07);
+  transform:translateY(-1px);
+}
+textarea{min-height:82px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:850;
+  margin:10px 0 5px;
+}
+.note{font-size:12px;color:var(--muted);margin-top:9px;text-align:center}
+.price-preview{
+  margin-top:7px;
+  padding:9px 11px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#ecfdf5,#e0f2fe);
+  color:#0f766e;
+  font-size:13px;
+  font-weight:950;
+  border:1px solid rgba(20,184,166,.12);
+  box-shadow:0 6px 16px rgba(15,118,110,.04);
+  animation:softPop .24s cubic-bezier(.2,.8,.2,1) both;
+}
+
+/* FILTER CHIPS */
+.chips{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:3px 0 10px;
+  scrollbar-width:none;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  white-space:nowrap;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.92);
+  border-radius:999px;
+  padding:9px 12px;
+  font-size:12px;
+  font-weight:900;
+  color:#586562;
+  box-shadow:0 4px 13px rgba(15,118,110,.04);
+  transition:
+    transform .18s cubic-bezier(.2,.8,.2,1),
+    box-shadow .2s ease,
+    background .2s ease,
+    color .2s ease;
+}
+.chip:active{transform:scale(.94)}
+.chip.active{
+  color:#fff;
+  border-color:transparent;
+  background:linear-gradient(135deg,#0f766e,#14b8a6,#0ea5e9);
+  box-shadow:0 10px 23px rgba(15,118,110,.22);
+  transform:translateY(-1px);
+}
+
+/* CARDS */
+.card{
+  background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(255,255,255,.84));
+  border:1px solid rgba(255,255,255,.94);
+  border-radius:24px;
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(15px);
+}
+.list{display:flex;flex-direction:column;gap:13px}
+.property,.lead,.visit{
+  position:relative;
+  overflow:hidden;
+  padding:16px;
+  animation:cardRise .42s cubic-bezier(.2,.8,.2,1) both;
+  transition:
+    transform .20s cubic-bezier(.2,.8,.2,1),
+    box-shadow .22s ease,
+    opacity .2s ease;
+}
+.property:hover,.lead:hover,.visit:hover{
+  box-shadow:0 24px 65px rgba(15,118,110,.14);
+}
+.property:active,.lead:active,.visit:active{transform:scale(.992)}
+.removing{
+  transform:translateX(34px) scale(.98)!important;
+  opacity:0;
+}
+.card-accent{
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:5px;
+  border-radius:24px 0 0 24px;
+}
+.property-head,.lead-head,.visit-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+.item-title{
+  font-size:16px;
+  font-weight:950;
+  letter-spacing:-.18px;
+  line-height:1.32;
+}
+.item-sub{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+  line-height:1.45;
+}
+.price{
+  font-weight:950;
+  font-size:17px;
+  color:#0f766e;
+  white-space:nowrap;
+}
+.meta{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:10px;
+  font-size:11px;
+}
+.tag{
+  padding:5px 8px;
+  border-radius:999px;
+  background:#f3f6f5;
+  color:#53605d;
+  font-weight:850;
+  border:1px solid rgba(15,118,110,.04);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+}
+.tag.sale{background:#ecfdf5;color:#047857}
+.tag.rent{background:#eff6ff;color:#1d4ed8}
+.tag.available{background:#dcfce7;color:#166534}
+.tag.onhold{background:#fef3c7;color:#92400e}
+.tag.sold,.tag.rented{background:#ede9fe;color:#6d28d9}
+.tag.hot{background:#fff1f2;color:#be123c}
+.tag.warm{background:#fff7ed;color:#c2410c}
+.tag.cold{background:#eff6ff;color:#1d4ed8}
+.tag.scheduled{background:#ecfeff;color:#0e7490}
+.tag.done{background:#ecfdf5;color:#047857}
+.tag.cancelled{background:#f1f5f9;color:#64748b}
+.info-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:11px;
+}
+.info{
+  padding:10px 11px;
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(247,250,249,.98),rgba(241,248,247,.88));
+  border:1px solid rgba(15,118,110,.06);
+  transition:transform .16s ease;
+}
+.info:active{transform:scale(.98)}
+.info small{
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+}
+.info b{
+  display:block;
+  margin-top:3px;
+  font-size:12px;
+}
+.actions{
+  display:flex;
+  gap:7px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+.action{
+  border:0;
+  border-radius:12px;
+  padding:9px 11px;
+  font-size:12px;
+  font-weight:900;
+  background:#f7faf9;
+  color:#38514c;
+  border:1px solid rgba(15,118,110,.07);
+  box-shadow:0 4px 12px rgba(15,118,110,.035);
+  transition:
+    transform .16s cubic-bezier(.2,.8,.2,1),
+    box-shadow .2s ease,
+    background .2s ease;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  touch-action:manipulation;
+}
+.action:active{transform:scale(.92)}
+.action:hover{box-shadow:0 8px 18px rgba(15,118,110,.08)}
+.call{background:#ecfdf5;color:#047857}
+.edit{background:#eff6ff;color:#1d4ed8}
+.delete{background:#fff1f2;color:#be123c}
+.empty{
+  padding:40px 20px;
+  text-align:center;
+  color:var(--muted);
+  line-height:1.55;
+  animation:softPop .28s cubic-bezier(.2,.8,.2,1) both;
+}
+
+/* FAB + NAV */
+.fab{
+  position:fixed;
+  right:18px;
+  bottom:95px;
+  width:54px;height:54px;
+  border:0;
+  border-radius:50%;
+  z-index:25;
+  color:#fff;
+  font-size:27px;
+  background:linear-gradient(135deg,#0f766e 0%,#14b8a6 48%,#0ea5e9 100%);
+  box-shadow:
+    0 18px 38px rgba(15,118,110,.30),
+    inset 0 1px 0 rgba(255,255,255,.24);
+  animation:fabFloat 3.2s ease-in-out infinite;
+  transition:
+    transform .18s cubic-bezier(.2,.8,.2,1),
+    box-shadow .2s ease;
+}
+.fab:before{
+  content:"";
+  position:absolute;
+  inset:-5px;
+  border-radius:inherit;
+  border:1px solid rgba(20,184,166,.19);
+  animation:fabRing 2.8s ease-out infinite;
+}
+.fab:active{
+  transform:scale(.88) rotate(6deg);
+  box-shadow:0 10px 24px rgba(15,118,110,.24);
+}
+nav{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:20;
+  padding:8px 9px calc(8px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(26px) saturate(1.25);
+  border-top:1px solid rgba(255,255,255,.92);
+  box-shadow:0 -12px 36px rgba(15,118,110,.07);
+}
+.navinner{
+  max-width:760px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+}
+.navbtn{
+  border:0;
+  background:transparent;
+  border-radius:16px;
+  padding:8px 3px;
+  color:#6f7c79;
+  font-size:11px;
+  transition:
+    transform .2s cubic-bezier(.2,.8,.2,1),
+    background .2s ease,
+    color .2s ease,
+    box-shadow .2s ease;
+}
+.navbtn:active{transform:scale(.96)}
+.navbtn.active{
+  color:#0f766e;
+  font-weight:950;
+  background:linear-gradient(135deg,#ccfbf1,#e0f2fe);
+  box-shadow:
+    inset 0 0 0 1px rgba(15,118,110,.04),
+    0 7px 17px rgba(15,118,110,.07);
+  transform:translateY(-2px);
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  background:rgba(13,31,28,.44);
+  backdrop-filter:blur(8px);
+  display:flex;
+  align-items:flex-end;
+  animation:fadeIn .18s ease both;
+}
+.sheet{
+  width:100%;
+  max-width:760px;
+  margin:auto;
+  max-height:90vh;
+  overflow:auto;
+  background:
+    radial-gradient(circle at 93% 0,rgba(20,184,166,.08),transparent 28%),
+    radial-gradient(circle at 4% 100%,rgba(37,99,235,.04),transparent 24%),
+    #fff;
+  border-radius:30px 30px 0 0;
+  padding:20px 16px calc(20px + env(safe-area-inset-bottom));
+  box-shadow:0 -26px 70px rgba(10,35,31,.24);
+  animation:sheetUp .36s cubic-bezier(.2,.86,.2,1) both;
+}
+.sheet:before{
+  content:"";
+  display:block;
+  width:44px;height:5px;
+  border-radius:999px;
+  background:#dfe9e7;
+  margin:-6px auto 14px;
+}
+.sheet h3{
+  margin:2px 0 12px;
+  font-size:22px;
+  letter-spacing:-.35px;
+}
+.sheet-actions{
+  display:flex;
+  gap:9px;
+  margin-top:17px;
+}
+.sheet-actions .btn{flex:1}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:98px;
+  transform:translateX(-50%);
+  z-index:80;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  max-width:calc(100% - 28px);
+  padding:11px 13px;
+  border-radius:16px;
+  color:#fff;
+  background:linear-gradient(135deg,#10201d,#203c36);
+  box-shadow:0 16px 36px rgba(0,0,0,.24);
+  animation:toastIn .28s cubic-bezier(.2,.8,.2,1) both;
+}
+.toast button{
+  border:0;
+  background:linear-gradient(135deg,#ccfbf1,#e0f2fe);
+  color:#0f766e;
+  font-weight:950;
+  border-radius:10px;
+  padding:7px 10px;
+}
+
+/* MORE */
+.more-card{padding:16px}
+.danger{
+  width:100%;
+  min-height:55px;
+  border:0;
+  border-radius:18px;
+  background:linear-gradient(135deg,#fff1f2,#ffe4e6);
+  color:#be123c;
+  font-size:16px;
+  font-weight:950;
+  box-shadow:
+    inset 0 0 0 1px rgba(225,29,72,.05),
+    0 8px 20px rgba(225,29,72,.05);
+  transition:transform .16s ease;
+}
+.danger:active{transform:scale(.975)}
+
+/* DATA SAFETY */
+.backup-box{
+  padding:16px;
+  margin-bottom:12px;
+  background:linear-gradient(145deg,#ecfdf5,#eff6ff);
+  border:1px solid rgba(15,118,110,.10);
+}
+.backup-title{font-size:16px;font-weight:950;color:#0f766e}
+.backup-desc{font-size:12px;line-height:1.5;color:var(--muted);margin-top:5px}
+.backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.backup-status{
+  margin-top:11px;padding:10px 12px;border-radius:14px;
+  background:rgba(255,255,255,.78);border:1px solid rgba(15,118,110,.08);
+  font-size:12px;color:#53605d;font-weight:800;line-height:1.4
+}
+@media(max-width:430px){.backup-actions{grid-template-columns:1fr}}
+
+/* MOTION */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes heroEnter{
+  from{opacity:0;transform:translateY(-16px) scale(.98)}
+  to{opacity:1;transform:none}
+}
+@keyframes statPop{
+  from{opacity:0;transform:translateY(11px) scale(.93)}
+  to{opacity:1;transform:none}
+}
+@keyframes viewIn{
+  from{opacity:0;transform:translateY(10px) scale(.995)}
+  to{opacity:1;transform:none}
+}
+@keyframes cardRise{
+  from{opacity:0;transform:translateY(13px) scale(.992)}
+  to{opacity:1;transform:none}
+}
+@keyframes softPop{
+  from{opacity:0;transform:scale(.97)}
+  to{opacity:1;transform:scale(1)}
+}
+@keyframes sheetUp{
+  from{opacity:0;transform:translateY(34px) scale(.988)}
+  to{opacity:1;transform:none}
+}
+@keyframes toastIn{
+  from{opacity:0;transform:translate(-50%,12px) scale(.96)}
+  to{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+@keyframes fabFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+@keyframes fabRing{
+  0%{opacity:.55;transform:scale(.92)}
+  70%,100%{opacity:0;transform:scale(1.22)}
+}
+@keyframes orbOne{
+  0%,100%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(-18px,14px) scale(1.08)}
+}
+@keyframes orbTwo{
+  0%,100%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(16px,-10px) scale(1.08)}
+}
+
+@media(min-width:600px){
+  .modal{align-items:center}
+  .sheet{border-radius:30px}
+  .fab{right:calc((100vw - 760px)/2 + 18px)}
+}
+@media(max-width:430px){
+  .title{font-size:25px}
+  .stats{gap:6px}
+  .stat{padding:11px 7px}
+  .stat b{font-size:18px}
+  .stat span{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation:none!important;
+    transition:none!important;
+    scroll-behavior:auto!important;
+  }
+}
+
+/* PERFORMANCE / SHARP RESPONSE MODE */
+button,.btn,.action,.chip,.navbtn,.fab{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.card,.stat{-webkit-backdrop-filter:none;backdrop-filter:none}
+nav{-webkit-backdrop-filter:blur(12px) saturate(1.08);backdrop-filter:blur(12px) saturate(1.08)}
+header:before,header:after,.fab,.fab:before{animation:none!important}
+.fab:before{display:none}
+header{animation-duration:.28s}
+.view{animation-duration:.16s}
+.property,.lead,.visit{
+  animation-duration:.18s;
+  content-visibility:auto;
+  contain-intrinsic-size:210px;
+}
+.btn,.action,.chip,.navbtn,.fab,.info{transition-duration:.10s!important}
+.modal{animation-duration:.12s}
+.sheet{animation-duration:.20s}
+.toast{animation-duration:.16s}
+@media(max-width:600px){
+  .property:hover,.lead:hover,.visit:hover{box-shadow:var(--shadow)}
+}
+
+</style>
+
+
+<style id="__mgrLicenseStyle">
+/* SIGNED OFFLINE LICENSING */
+#mgrLicenseGate{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:18px;background:linear-gradient(145deg,#06131a 0%,#0b2730 45%,#10233a 100%);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#f8fafc;overflow:auto}
+#mgrLicenseGate.mgr-hidden{display:none!important}
+.mgr-license-card{width:min(100%,520px);border-radius:28px;padding:22px;background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.16);box-shadow:0 30px 90px rgba(0,0,0,.38);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.mgr-license-logo{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:28px;background:linear-gradient(135deg,#14b8a6,#2563eb 55%,#7c3aed);box-shadow:0 14px 32px rgba(37,99,235,.26);margin-bottom:14px}
+.mgr-license-title{font-size:24px;font-weight:950;letter-spacing:-.5px}.mgr-license-app{font-size:13px;color:#a5f3fc;margin-top:4px;font-weight:800}.mgr-license-copy{font-size:13px;line-height:1.55;color:#cbd5e1;margin:13px 0 16px}
+.mgr-device{padding:13px;border-radius:16px;background:rgba(2,6,23,.42);border:1px solid rgba(148,163,184,.16);margin-bottom:14px}.mgr-device-label{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:#94a3b8;font-weight:900}.mgr-device-row{display:flex;gap:9px;align-items:center;margin-top:7px}.mgr-device-id{flex:1;min-width:0;font-size:14px;font-weight:950;letter-spacing:.35px;word-break:break-all;color:#fff}.mgr-mini{border:0;border-radius:11px;padding:9px 11px;background:#e0f2fe;color:#075985;font-weight:900;cursor:pointer}
+.mgr-license-card label{display:block;font-size:12px;font-weight:900;color:#cbd5e1;margin:10px 0 6px}.mgr-license-card textarea{width:100%;min-height:102px;resize:vertical;border:1px solid rgba(148,163,184,.22);border-radius:15px;padding:12px;background:rgba(2,6,23,.52);color:#fff;outline:none;font:12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-sizing:border-box}.mgr-license-card textarea:focus{border-color:#22d3ee;box-shadow:0 0 0 3px rgba(34,211,238,.12)}
+.mgr-activate{width:100%;border:0;border-radius:15px;padding:13px 16px;margin-top:11px;color:#fff;font-size:15px;font-weight:950;background:linear-gradient(135deg,#0f766e,#0ea5e9 55%,#7c3aed);box-shadow:0 12px 28px rgba(14,165,233,.22);cursor:pointer;touch-action:manipulation}.mgr-activate:active{transform:scale(.985)}
+.mgr-license-msg{min-height:20px;margin-top:10px;font-size:12px;font-weight:800;color:#fecaca}.mgr-license-msg.ok{color:#86efac}.mgr-license-help{margin-top:12px;padding-top:12px;border-top:1px solid rgba(148,163,184,.14);font-size:11px;line-height:1.55;color:#94a3b8}.mgr-license-help b{color:#e2e8f0}
+</style>
+
+</head>
+<body>
+
+<div id="mgrLicenseGate">
+  <div class="mgr-license-card">
+    <div class="mgr-license-logo">🔐</div>
+    <div class="mgr-license-title">App License Required</div>
+    <div class="mgr-license-app" id="mgrLicenseAppName"></div>
+    <div class="mgr-license-copy">This copy is protected with a signed one-device license. Send the Device ID below to the seller, then paste the activation license you receive.</div>
+    <div class="mgr-device">
+      <div class="mgr-device-label">This Device ID</div>
+      <div class="mgr-device-row"><div class="mgr-device-id" id="mgrDeviceId">Loading…</div><button class="mgr-mini" type="button" id="mgrCopyDeviceBtn">Copy</button></div>
+    </div>
+    <label for="mgrLicenseInput">Activation License</label>
+    <textarea id="mgrLicenseInput" placeholder="Paste signed activation license here"></textarea>
+    <button class="mgr-activate" type="button" id="mgrActivateBtn">Activate App</button>
+    <div class="mgr-license-msg" id="mgrLicenseMsg"></div>
+    <div class="mgr-license-help"><b>Important:</b> the license is tied to this app and this Device ID. If browser/site data is cleared, a new activation may be required.</div>
+  </div>
+</div>
+
+<div class="app">
+  <header>
+    <div class="title">🏠 Property Dealer Pro</div>
+    <div class="sub">Manage properties, clients, follow-ups and site visits from one simple mobile dashboard.</div>
+    <div class="stats">
+      <div class="stat"><b id="statListings">0</b><span>Listings</span></div>
+      <div class="stat"><b id="statHot">0</b><span>Hot Leads</span></div>
+      <div class="stat"><b id="statVisits">0</b><span>Visits</span></div>
+      <div class="stat"><b id="statDeals">0</b><span>Deals</span></div>
+    </div>
+  </header>
+
+  <section id="propertiesView" class="section view">
+    <div class="section-head"><h2>Properties</h2><button class="btn btn-primary btn-small" onclick="openProperty()">+ Add Property</button></div>
+    <div class="search"><input id="propertySearch" placeholder="Search location, owner, house..." oninput="queueRender('properties')"></div>
+    <div id="propertyChips" class="chips"></div>
+    <div id="propertyList" class="list"></div>
+  </section>
+
+  <section id="leadsView" class="section view hidden">
+    <div class="section-head"><h2>Clients & Leads</h2><button class="btn btn-primary btn-small" onclick="openLead()">+ Add Lead</button></div>
+    <div class="search"><input id="leadSearch" placeholder="Search client, area, requirement..." oninput="queueRender('leads')"></div>
+    <div id="leadChips" class="chips"></div>
+    <div id="leadList" class="list"></div>
+  </section>
+
+  <section id="visitsView" class="section view hidden">
+    <div class="section-head"><h2>Site Visits</h2><button class="btn btn-primary btn-small" onclick="openVisit()">+ Add Visit</button></div>
+    <div id="visitList" class="list"></div>
+  </section>
+
+  <section id="moreView" class="section view hidden">
+    <div class="section-head"><h2>More</h2></div>
+    <div class="card backup-box">
+      <div class="backup-title">🛡️ Data Safety</div>
+      <div class="backup-desc">Your records save automatically on this device. Download a backup regularly so you can restore everything if browser data is cleared, the phone is reset, or you move to another device.</div>
+      <div class="backup-actions">
+        <button class="btn btn-primary" onclick="backupData()">⬇️ Backup Data</button>
+        <button class="btn btn-light" onclick="document.getElementById('restoreFile').click()">⬆️ Restore Data</button>
+      </div>
+      <input id="restoreFile" class="hidden" type="file" accept="application/json,.json" onchange="restoreDataFile(this)">
+      <div id="backupStatus" class="backup-status">Last Backup: Never</div>
+    </div>
+    <div class="card more-card">
+      <button class="danger" onclick="resetAll()">Delete All Property Data</button>
+    </div>
+  </section>
+</div>
+
+<button id="fab" class="fab" onclick="quickAdd()">+</button>
+
+<nav><div class="navinner">
+  <button class="navbtn active" id="nav-properties" onclick="showView('properties')">🏘️<br>Properties</button>
+  <button class="navbtn" id="nav-leads" onclick="showView('leads')">👥<br>Leads</button>
+  <button class="navbtn" id="nav-visits" onclick="showView('visits')">📍<br>Visits</button>
+  <button class="navbtn" id="nav-more" onclick="showView('more')">•••<br>More</button>
+</div></nav>
+
+<div id="modal" class="modal hidden" onclick="closeModal(event)"><div id="sheet" class="sheet"></div></div>
+<div id="toast" class="toast hidden"><span id="toastText">Deleted</span><button onclick="undoDelete()">Undo</button></div>
+
+<script>
+const KEY='propertyDealerPro_v1';
+const BACKUP_META_KEY=KEY+'_lastBackup_v1';
+const BACKUP_APP_ID='propertyDealerPro';
+const BACKUP_VERSION=1;
+const TYPES=['House','Apartment','Plot','Commercial','Shop','Office','Farm House','Other'];
+const TYPE_EMOJI={House:'🏠',Apartment:'🏢',Plot:'📐',Commercial:'🏬',Shop:'🏪',Office:'🏙️','Farm House':'🌳',Other:'📦'};
+const PKR_NUMBER=new Intl.NumberFormat('en-PK');
+let state=loadState();
+let currentView='properties', propertyFilter='All', leadFilter='All';
+let lastDeleted=null, undoTimer=null;
+
+function defaultState(){return{properties:[],leads:[],visits:[]}}
+function loadState(){try{return JSON.parse(localStorage.getItem(KEY))||defaultState()}catch(e){return defaultState()}}
+
+const renderRAF={properties:0,leads:0,visits:0};
+function updateStats(){
+  document.getElementById('statListings').textContent=state.properties.filter(p=>!['Sold','Rented'].includes(p.status)).length;
+  document.getElementById('statHot').textContent=state.leads.filter(l=>l.priority==='Hot').length;
+  document.getElementById('statVisits').textContent=state.visits.filter(v=>v.status==='Scheduled'&&v.date>=today()).length;
+  document.getElementById('statDeals').textContent=state.properties.filter(p=>['Sold','Rented'].includes(p.status)).length;
+}
+function renderScope(v=currentView){
+  if(v==='properties')renderProperties();
+  else if(v==='leads')renderLeads();
+  else if(v==='visits')renderVisits();
+}
+function queueRender(v=currentView){
+  if(!renderRAF[v]){
+    renderRAF[v]=requestAnimationFrame(()=>{renderRAF[v]=0;renderScope(v)});
+  }
+}
+function saveState(scope=currentView){
+  try{localStorage.setItem(KEY,JSON.stringify(state))}
+  catch(e){alert('Could not save data. Browser storage may be full.');return false}
+  updateStats();
+  queueRender(scope);
+  return true;
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function money(n){
+  n=Number(n||0);
+  if(n>=10000000)return 'Rs '+(n/10000000).toFixed(n%10000000?1:0)+' Cr';
+  if(n>=100000)return 'Rs '+(n/100000).toFixed(n%100000?1:0)+' Lac';
+  return 'Rs '+PKR_NUMBER.format(n)
+}
+function compactPKR(n){
+  n=Number(n||0);
+  if(!n) return '';
+  const clean=x=>Number(x.toFixed(2)).toString();
+  if(n>=10000000) return clean(n/10000000)+' Cr';
+  if(n>=100000) return clean(n/100000)+' Lac';
+  if(n>=1000) return clean(n/1000)+' Thousand';
+  return PKR_NUMBER.format(n);
+}
+function formatNumberInput(el, previewId){
+  const digits=String(el.value||'').replace(/[^0-9]/g,'');
+  const num=digits ? Number(digits) : 0;
+  el.value=digits ? num.toLocaleString('en-PK') : '';
+  if(previewId){
+    const preview=document.getElementById(previewId);
+    if(preview){
+      preview.textContent=num ? '≈ '+compactPKR(num) : '';
+      preview.classList.toggle('hidden',!num);
+    }
+  }
+}
+function parseNumberInput(v){
+  return Number(String(v||'').replace(/,/g,'').replace(/[^0-9.]/g,''))||0;
+}
+function today(){return new Date().toISOString().slice(0,10)}
+function phoneHref(p){return 'tel:'+String(p||'').replace(/[^\d+]/g,'')}
+function cleanPhone(p){return String(p||'').replace(/[^\d+]/g,'')}
+function isEmbeddedPreview(){
+  try{return window.self!==window.top}catch(e){return true}
+}
+function openDialer(phone){
+  const clean=cleanPhone(phone);
+  if(!clean){alert('No phone number saved');return}
+
+  // Chat/file previews often block external phone handlers.
+  if(isEmbeddedPreview()){
+    showCallSheet(clean);
+    return;
+  }
+
+  // In a normal browser tab / installed web app this triggers the phone dialer.
+  const a=document.createElement('a');
+  a.href='tel:'+clean;
+  a.style.display='none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>a.remove(),500);
+}
+function showCallSheet(phone){
+  const clean=cleanPhone(phone);
+  openModal(`<h3>📞 Call Client</h3>
+    <div style="font-size:13px;color:#6e7c79;margin-bottom:8px">Phone number</div>
+    <div style="font-size:25px;font-weight:950;letter-spacing:.4px;padding:14px;border-radius:16px;background:linear-gradient(135deg,#ecfdf5,#e0f2fe);color:#0f766e;text-align:center">${clean}</div>
+    <div class="note">This preview blocks the Android dialer. Open the downloaded app in Chrome for one-tap calling.</div>
+    <div class="sheet-actions">
+      <button class="btn btn-light" onclick="copyPhone('${clean}')">📋 Copy Number</button>
+      <button class="btn btn-primary" onclick="closeModal()">OK</button>
+    </div>`);
+}
+async function copyPhone(phone){
+  const clean=cleanPhone(phone);
+  if(!clean)return;
+  try{
+    await navigator.clipboard.writeText(clean);
+    showSimpleToast('Number copied: '+clean);
+  }catch(e){
+    const ta=document.createElement('textarea');
+    ta.value=clean;
+    document.body.appendChild(ta);
+    ta.select();
+    try{
+      document.execCommand('copy');
+      showSimpleToast('Number copied: '+clean);
+    }catch(_){}
+    ta.remove();
+  }
+}
+function showSimpleToast(msg){
+  const t=document.getElementById('toast');
+  if(!t)return;
+  document.getElementById('toastText').textContent=msg;
+  const b=t.querySelector('button');
+  if(b)b.classList.add('hidden');
+  t.classList.remove('hidden');
+  clearTimeout(undoTimer);
+  undoTimer=setTimeout(()=>{
+    t.classList.add('hidden');
+    if(b)b.classList.remove('hidden');
+  },3000);
+}
+function mapsHref(link,locationText){
+  const raw=String(link||'').trim();
+  if(raw){
+    if(/^https?:\/\//i.test(raw)) return raw;
+    return 'https://'+raw;
+  }
+  return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(locationText||'');
+}
+
+function showView(v){
+  if(currentView===v)return;
+  currentView=v;
+  ['properties','leads','visits','more'].forEach(x=>{
+    document.getElementById(x+'View').classList.toggle('hidden',x!==v);
+    document.getElementById('nav-'+x).classList.toggle('active',x===v);
+  });
+  document.getElementById('fab').classList.toggle('hidden',v==='more');
+  queueRender(v);
+}
+function quickAdd(){
+  if(currentView==='leads')openLead();
+  else if(currentView==='visits')openVisit();
+  else openProperty();
+}
+function renderAll(){
+  updateStats();
+  renderPropertyChips();
+  renderLeadChips();
+  renderScope(currentView);
+}
+
+/* PROPERTIES */
+function renderPropertyChips(){
+  const cats=['All',...TYPES];
+  document.getElementById('propertyChips').innerHTML=cats.map(c=>`<button class="chip ${c===propertyFilter?'active':''}" onclick="setPropertyFilter('${c.replaceAll("'","\\'")}')">${c==='All'?'✨ All':(TYPE_EMOJI[c]||'📦')+' '+c}</button>`).join('');
+}
+function setPropertyFilter(c){propertyFilter=c;renderPropertyChips();renderProperties()}
+function renderProperties(){
+  const q=(document.getElementById('propertySearch')?.value||'').trim().toLowerCase();
+  let arr=state.properties.filter(p=>(propertyFilter==='All'||p.type===propertyFilter)&&(!q||[p.title,p.location,p.owner,p.phone,p.type,p.purpose,p.status].join(' ').toLowerCase().includes(q)));
+  const el=document.getElementById('propertyList');
+  if(!arr.length){el.innerHTML='<div class="card empty">No properties here yet.<br><b>Tap + Add Property</b> to create your first listing.</div>';return}
+  el.innerHTML=[...arr].reverse().map((p,i)=>propertyHtml(p,i)).join('');
+}
+function propertyHtml(p,i){
+  const color=p.purpose==='Rent'?'linear-gradient(#2563eb,#0ea5e9)':'linear-gradient(#0f766e,#14b8a6)';
+  return `<div class="card property" id="property-${p.id}" >
+    <div class="card-accent" style="background:${color}"></div>
+    <div class="property-head">
+      <div>
+        <div class="item-title">${TYPE_EMOJI[p.type]||'🏘️'} ${esc(p.title||p.type)}</div>
+        <div class="item-sub">📍 ${esc(p.location||'Location not added')}</div>
+      </div>
+      <div class="price">${money(p.price)}</div>
+    </div>
+    <div class="meta">
+      <span class="tag ${p.purpose==='Rent'?'rent':'sale'}">${esc(p.purpose)}</span>
+      <span class="tag">${esc(p.type)}</span>
+      ${p.size?`<span class="tag">${esc(p.size)}</span>`:''}
+      <span class="tag ${p.status.toLowerCase().replace(' ','')}">${esc(p.status)}</span>
+    </div>
+    <div class="info-grid">
+      <div class="info"><small>Owner</small><b>${esc(p.owner||'—')}</b></div>
+      <div class="info"><small>Phone</small><b>${esc(p.phone||'—')}</b></div>
+    </div>
+    ${p.notes?`<div class="item-sub" style="margin-top:9px">📝 ${esc(p.notes)}</div>`:''}
+    <div class="actions">
+      ${p.phone?`<button type="button" class="action call" onclick="openDialer('${String(p.phone||'').replaceAll("'","\\'")}')">📞 Call</button><button type="button" class="action" onclick="copyPhone('${String(p.phone||'').replaceAll("'","\\'")}')">📋 Copy</button>`:''}
+      ${p.location?`<button class="action" onclick="window.open('${mapsHref(p.mapsLink,p.location).replaceAll("'","%27")}','_blank')">🗺️ Google Maps</button>`:''}
+      <button class="action edit" onclick="openProperty('${p.id}')">✏️ Edit</button>
+      <button class="action delete" onclick="deleteProperty('${p.id}')">🗑️ Delete</button>
+    </div>
+  </div>`
+}
+function openProperty(id=null){
+  const p=id?state.properties.find(x=>x.id===id):{id:uid(),title:'',type:'House',purpose:'Sale',location:'',mapsLink:'',price:'',size:'',owner:'',phone:'',status:'Available',notes:''};
+  openModal(`<h3>${id?'✏️ Edit':'➕ Add'} Property</h3>
+    <label>Listing title</label><input id="p_title" value="${esc(p.title)}" placeholder="e.g. 10 Marla House Bahria">
+    <div class="row">
+      <div><label>Property type</label><select id="p_type">${TYPES.map(x=>`<option ${x===p.type?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div><label>For</label><select id="p_purpose">${['Sale','Rent'].map(x=>`<option ${x===p.purpose?'selected':''}>${x}</option>`).join('')}</select></div>
+    </div>
+    <label>Location / Area</label><input id="p_location" value="${esc(p.location)}" placeholder="e.g. DHA 2, Islamabad">
+    <label>Google Maps link <span style="font-weight:700;color:#94a3b8">(optional)</span></label>
+    <input id="p_maps" type="url" value="${esc(p.mapsLink||'')}" placeholder="Paste Google Maps link here">
+    <div class="note" style="text-align:left;margin-top:6px">If left empty, the Maps button will search the location/area automatically.</div>
+    <div class="row">
+      <div><label>Price (PKR)</label><input id="p_price" type="text" inputmode="numeric" value="${p.price?Number(p.price).toLocaleString('en-PK'):''}" placeholder="25,000,000" oninput="formatNumberInput(this,'p_price_preview')"><div id="p_price_preview" class="price-preview ${p.price?'':'hidden'}">${p.price?'≈ '+compactPKR(p.price):''}</div></div>
+      <div><label>Size</label><input id="p_size" value="${esc(p.size)}" placeholder="10 Marla"></div>
+    </div>
+    <div class="row">
+      <div><label>Owner name</label><input id="p_owner" value="${esc(p.owner)}"></div>
+      <div><label>Owner phone</label><input id="p_phone" inputmode="tel" value="${esc(p.phone)}"></div>
+    </div>
+    <label>Status</label><select id="p_status">${['Available','On Hold','Sold','Rented'].map(x=>`<option ${x===p.status?'selected':''}>${x}</option>`).join('')}</select>
+    <label>Notes</label><textarea id="p_notes" placeholder="Floor, facing, demand, documents, etc.">${esc(p.notes)}</textarea>
+    <div class="sheet-actions"><button class="btn btn-light" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveProperty('${p.id}',${id?'true':'false'})">Save Property</button></div>`)
+}
+function saveProperty(id,isEdit){
+  const p={id,
+    title:document.getElementById('p_title').value.trim(),
+    type:document.getElementById('p_type').value,
+    purpose:document.getElementById('p_purpose').value,
+    location:document.getElementById('p_location').value.trim(),
+    mapsLink:document.getElementById('p_maps').value.trim(),
+    price:parseNumberInput(document.getElementById('p_price').value),
+    size:document.getElementById('p_size').value.trim(),
+    owner:document.getElementById('p_owner').value.trim(),
+    phone:document.getElementById('p_phone').value.trim(),
+    status:document.getElementById('p_status').value,
+    notes:document.getElementById('p_notes').value.trim()
+  };
+  if(!p.title){alert('Enter listing title');return}
+  if(isEdit)state.properties=state.properties.map(x=>x.id===id?p:x);else state.properties.push(p);
+  closeModal();saveState('properties')
+}
+
+/* LEADS */
+function renderLeadChips(){
+  const cats=['All','Hot','Warm','Cold'];
+  document.getElementById('leadChips').innerHTML=cats.map(c=>`<button class="chip ${c===leadFilter?'active':''}" onclick="setLeadFilter('${c}')">${c==='All'?'✨ All':c==='Hot'?'🔥 Hot':c==='Warm'?'🟠 Warm':'🔵 Cold'}</button>`).join('');
+}
+function setLeadFilter(c){leadFilter=c;renderLeadChips();renderLeads()}
+function renderLeads(){
+  const q=(document.getElementById('leadSearch')?.value||'').trim().toLowerCase();
+  let arr=state.leads.filter(l=>(leadFilter==='All'||l.priority===leadFilter)&&(!q||[l.name,l.phone,l.kind,l.requirement,l.location,l.priority].join(' ').toLowerCase().includes(q)));
+  const el=document.getElementById('leadList');
+  if(!arr.length){el.innerHTML='<div class="card empty">No client leads yet.<br><b>Tap + Add Lead</b> to start following prospects.</div>';return}
+  el.innerHTML=[...arr].reverse().map((l,i)=>leadHtml(l,i)).join('');
+}
+function leadHtml(l,i){
+  const accent=l.priority==='Hot'?'linear-gradient(#e11d48,#fb7185)':l.priority==='Warm'?'linear-gradient(#f97316,#f59e0b)':'linear-gradient(#2563eb,#38bdf8)';
+  return `<div class="card lead" id="lead-${l.id}" >
+    <div class="card-accent" style="background:${accent}"></div>
+    <div class="lead-head">
+      <div>
+        <div class="item-title">👤 ${esc(l.name)}</div>
+        <div class="item-sub">${esc(l.kind)} · ${esc(l.requirement||'Requirement not added')}</div>
+      </div>
+      <span class="tag ${l.priority.toLowerCase()}">${l.priority==='Hot'?'🔥 ':l.priority==='Warm'?'🟠 ':'🔵 '}${esc(l.priority)}</span>
+    </div>
+    <div class="info-grid">
+      <div class="info"><small>Budget</small><b>${l.budget?money(l.budget):'—'}</b></div>
+      <div class="info"><small>Preferred Area</small><b>${esc(l.location||'—')}</b></div>
+    </div>
+    <div class="meta">
+      ${l.followUp?`<span class="tag">📅 Follow-up ${esc(l.followUp)}</span>`:''}
+      ${l.phone?`<span class="tag">📱 ${esc(l.phone)}</span>`:''}
+    </div>
+    ${l.notes?`<div class="item-sub" style="margin-top:9px">📝 ${esc(l.notes)}</div>`:''}
+    <div class="actions">
+      ${l.phone?`<button type="button" class="action call" onclick="openDialer('${String(l.phone||'').replaceAll("'","\\'")}')">📞 Call</button><button type="button" class="action" onclick="copyPhone('${String(l.phone||'').replaceAll("'","\\'")}')">📋 Copy</button>`:''}
+      <button class="action edit" onclick="openLead('${l.id}')">✏️ Edit</button>
+      <button class="action delete" onclick="deleteLead('${l.id}')">🗑️ Delete</button>
+    </div>
+  </div>`
+}
+function openLead(id=null){
+  const l=id?state.leads.find(x=>x.id===id):{id:uid(),name:'',phone:'',kind:'Buyer',requirement:'',budget:'',location:'',priority:'Warm',followUp:'',notes:''};
+  openModal(`<h3>${id?'✏️ Edit':'➕ Add'} Client Lead</h3>
+    <div class="row">
+      <div><label>Client name</label><input id="l_name" value="${esc(l.name)}"></div>
+      <div><label>Phone</label><input id="l_phone" inputmode="tel" value="${esc(l.phone)}"></div>
+    </div>
+    <div class="row">
+      <div><label>Client type</label><select id="l_kind">${['Buyer','Tenant','Seller','Landlord','Investor'].map(x=>`<option ${x===l.kind?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div><label>Lead priority</label><select id="l_priority">${['Hot','Warm','Cold'].map(x=>`<option ${x===l.priority?'selected':''}>${x}</option>`).join('')}</select></div>
+    </div>
+    <label>Requirement</label><input id="l_requirement" value="${esc(l.requirement)}" placeholder="e.g. 10 Marla house for sale">
+    <div class="row">
+      <div><label>Budget (PKR)</label><input id="l_budget" type="number" inputmode="numeric" value="${esc(l.budget)}"></div>
+      <div><label>Preferred area</label><input id="l_location" value="${esc(l.location)}" placeholder="e.g. DHA 2"></div>
+    </div>
+    <label>Next follow-up</label><input id="l_followup" type="date" value="${esc(l.followUp)}">
+    <label>Notes</label><textarea id="l_notes" placeholder="What did the client say?">${esc(l.notes)}</textarea>
+    <div class="sheet-actions"><button class="btn btn-light" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveLead('${l.id}',${id?'true':'false'})">Save Lead</button></div>`)
+}
+function saveLead(id,isEdit){
+  const l={id,
+    name:document.getElementById('l_name').value.trim(),
+    phone:document.getElementById('l_phone').value.trim(),
+    kind:document.getElementById('l_kind').value,
+    requirement:document.getElementById('l_requirement').value.trim(),
+    budget:Number(document.getElementById('l_budget').value||0),
+    location:document.getElementById('l_location').value.trim(),
+    priority:document.getElementById('l_priority').value,
+    followUp:document.getElementById('l_followup').value,
+    notes:document.getElementById('l_notes').value.trim()
+  };
+  if(!l.name){alert('Enter client name');return}
+  if(isEdit)state.leads=state.leads.map(x=>x.id===id?l:x);else state.leads.push(l);
+  closeModal();saveState('leads')
+}
+
+/* VISITS */
+function renderVisits(){
+  const el=document.getElementById('visitList');
+  let arr=[...state.visits].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  if(!arr.length){el.innerHTML='<div class="card empty">No site visits scheduled.<br><b>Tap + Add Visit</b> to plan one.</div>';return}
+  el.innerHTML=arr.map((v,i)=>visitHtml(v,i)).join('');
+}
+function visitHtml(v,i){
+  const accent=v.status==='Done'?'linear-gradient(#059669,#34d399)':v.status==='Cancelled'?'linear-gradient(#64748b,#94a3b8)':'linear-gradient(#0ea5e9,#2563eb)';
+  return `<div class="card visit" id="visit-${v.id}" >
+    <div class="card-accent" style="background:${accent}"></div>
+    <div class="visit-head">
+      <div>
+        <div class="item-title">📍 ${esc(v.property)}</div>
+        <div class="item-sub">With ${esc(v.client)}</div>
+      </div>
+      <span class="tag ${v.status.toLowerCase()}">${esc(v.status)}</span>
+    </div>
+    <div class="info-grid">
+      <div class="info"><small>Date</small><b>${esc(v.date||'—')}</b></div>
+      <div class="info"><small>Time</small><b>${esc(v.time||'—')}</b></div>
+    </div>
+    ${v.notes?`<div class="item-sub" style="margin-top:9px">📝 ${esc(v.notes)}</div>`:''}
+    <div class="actions">
+      <button class="action edit" onclick="openVisit('${v.id}')">✏️ Edit</button>
+      <button class="action delete" onclick="deleteVisit('${v.id}')">🗑️ Delete</button>
+    </div>
+  </div>`
+}
+function openVisit(id=null){
+  const v=id?state.visits.find(x=>x.id===id):{id:uid(),client:'',property:'',date:today(),time:'',status:'Scheduled',notes:''};
+  openModal(`<h3>${id?'✏️ Edit':'➕ Add'} Site Visit</h3>
+    <label>Client name</label><input id="v_client" value="${esc(v.client)}" placeholder="Client / buyer">
+    <label>Property / location</label><input id="v_property" value="${esc(v.property)}" placeholder="e.g. 10 Marla House, DHA 2">
+    <div class="row">
+      <div><label>Date</label><input id="v_date" type="date" value="${esc(v.date)}"></div>
+      <div><label>Time</label><input id="v_time" type="time" value="${esc(v.time)}"></div>
+    </div>
+    <label>Status</label><select id="v_status">${['Scheduled','Done','Cancelled'].map(x=>`<option ${x===v.status?'selected':''}>${x}</option>`).join('')}</select>
+    <label>Notes</label><textarea id="v_notes" placeholder="Meeting point, client preference, etc.">${esc(v.notes)}</textarea>
+    <div class="sheet-actions"><button class="btn btn-light" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveVisit('${v.id}',${id?'true':'false'})">Save Visit</button></div>`)
+}
+function saveVisit(id,isEdit){
+  const v={id,
+    client:document.getElementById('v_client').value.trim(),
+    property:document.getElementById('v_property').value.trim(),
+    date:document.getElementById('v_date').value,
+    time:document.getElementById('v_time').value,
+    status:document.getElementById('v_status').value,
+    notes:document.getElementById('v_notes').value.trim()
+  };
+  if(!v.client||!v.property){alert('Enter client and property');return}
+  if(isEdit)state.visits=state.visits.map(x=>x.id===id?v:x);else state.visits.push(v);
+  closeModal();saveState('visits')
+}
+
+/* BACKUP + RESTORE */
+function backupStamp(){
+  try{return localStorage.getItem(BACKUP_META_KEY)||''}catch(e){return''}
+}
+function formatBackupDate(iso){
+  if(!iso)return 'Never';
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime()))return 'Never';
+  return d.toLocaleString('en-PK',{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+}
+function updateBackupStatus(){
+  const el=document.getElementById('backupStatus');
+  if(!el)return;
+  const stamp=backupStamp();
+  el.textContent='Last Backup: '+formatBackupDate(stamp);
+}
+function backupData(){
+  const createdAt=new Date().toISOString();
+  const payload={
+    app:'Property Dealer Pro',
+    appId:BACKUP_APP_ID,
+    storageKey:KEY,
+    backupVersion:BACKUP_VERSION,
+    createdAt,
+    data:state
+  };
+  try{
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='Property_Dealer_Pro_Backup_'+today()+'.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1200);
+    localStorage.setItem(BACKUP_META_KEY,createdAt);
+    updateBackupStatus();
+    showSimpleToast('Backup downloaded successfully');
+  }catch(e){
+    alert('Could not create backup on this browser.');
+  }
+}
+function isValidBackup(obj){
+  const d=obj?.data;
+  return !!(
+    obj && obj.appId===BACKUP_APP_ID && obj.storageKey===KEY &&
+    Number(obj.backupVersion||0)===BACKUP_VERSION &&
+    d && Array.isArray(d.properties) && Array.isArray(d.leads) && Array.isArray(d.visits)
+  );
+}
+function restoreDataFile(input){
+  const file=input?.files?.[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const obj=JSON.parse(String(reader.result||''));
+      if(!isValidBackup(obj)){
+        alert('This is not a valid Property Dealer Pro backup file.');
+        return;
+      }
+      if(!confirm('Restore this backup? Current Property Dealer Pro data on this device will be replaced.'))return;
+      state={
+        properties:obj.data.properties||[],
+        leads:obj.data.leads||[],
+        visits:obj.data.visits||[]
+      };
+      localStorage.setItem(KEY,JSON.stringify(state));
+      lastDeleted=null;
+      propertyFilter='All';
+      leadFilter='All';
+      currentView='properties';
+      ['properties','leads','visits','more'].forEach(x=>{
+        document.getElementById(x+'View').classList.toggle('hidden',x!=='properties');
+        document.getElementById('nav-'+x).classList.toggle('active',x==='properties');
+      });
+      document.getElementById('fab').classList.remove('hidden');
+      renderAll();
+      updateBackupStatus();
+      showSimpleToast('Backup restored successfully');
+    }catch(e){
+      alert('Could not read this backup file.');
+    }finally{
+      input.value='';
+    }
+  };
+  reader.onerror=()=>{alert('Could not read this backup file.');input.value=''};
+  reader.readAsText(file);
+}
+function backupIsDue(){
+  const stamp=backupStamp();
+  if(!stamp)return true;
+  const t=new Date(stamp).getTime();
+  if(!Number.isFinite(t))return true;
+  return Date.now()-t>=7*24*60*60*1000;
+}
+function showBackupReminder(){
+  updateBackupStatus();
+  if(backupIsDue())setTimeout(()=>showSimpleToast('🛡️ Backup reminder: save a fresh backup from More'),900);
+}
+
+/* DELETE + UNDO */
+function animateDelete(type,id,callback){
+  const el=document.getElementById(type+'-'+id);
+  if(el)el.classList.add('removing');
+  setTimeout(callback,180)
+}
+function deleteProperty(id){
+  const idx=state.properties.findIndex(x=>x.id===id);if(idx<0)return;
+  const item=state.properties[idx];
+  animateDelete('property',id,()=>{lastDeleted={type:'property',item,index:idx};state.properties.splice(idx,1);saveState('properties');showUndo('Property deleted')})
+}
+function deleteLead(id){
+  const idx=state.leads.findIndex(x=>x.id===id);if(idx<0)return;
+  const item=state.leads[idx];
+  animateDelete('lead',id,()=>{lastDeleted={type:'lead',item,index:idx};state.leads.splice(idx,1);saveState('leads');showUndo('Lead deleted')})
+}
+function deleteVisit(id){
+  const idx=state.visits.findIndex(x=>x.id===id);if(idx<0)return;
+  const item=state.visits[idx];
+  animateDelete('visit',id,()=>{lastDeleted={type:'visit',item,index:idx};state.visits.splice(idx,1);saveState('visits');showUndo('Visit deleted')})
+}
+function showUndo(msg){
+  document.getElementById('toastText').textContent=msg;
+  document.getElementById('toast').classList.remove('hidden');
+  clearTimeout(undoTimer);undoTimer=setTimeout(()=>{document.getElementById('toast').classList.add('hidden');lastDeleted=null},5000)
+}
+function undoDelete(){
+  if(!lastDeleted)return;
+  const scope=lastDeleted.type==='property'?'properties':lastDeleted.type==='lead'?'leads':'visits';
+  if(lastDeleted.type==='property')state.properties.splice(lastDeleted.index,0,lastDeleted.item);
+  if(lastDeleted.type==='lead')state.leads.splice(lastDeleted.index,0,lastDeleted.item);
+  if(lastDeleted.type==='visit')state.visits.splice(lastDeleted.index,0,lastDeleted.item);
+  lastDeleted=null;clearTimeout(undoTimer);document.getElementById('toast').classList.add('hidden');saveState(scope)
+}
+
+/* MODAL + RESET */
+function openModal(html){document.getElementById('sheet').innerHTML=html;document.getElementById('modal').classList.remove('hidden')}
+function closeModal(e){if(!e||e.target.id==='modal')document.getElementById('modal').classList.add('hidden')}
+function resetAll(){
+  if(confirm('Delete all properties, leads and visits?')){
+    if(confirm('Are you sure?')){
+      state=defaultState();
+      localStorage.setItem(KEY,JSON.stringify(state));
+      updateStats();
+      if(currentView!=='properties')showView('properties');else queueRender('properties');
+    }
+  }
+}
+renderAll();
+showBackupReminder();
+</script>
+
+<script id="__mgrLicenseScript">
+(()=>{
+  'use strict';
+  const LIC_APP_ID="property_dealer_pro";
+  const LIC_APP_NAME="Property Dealer Pro";
+  const LIC_PUBLIC_JWK={"kty":"EC","crv":"P-256","x":"Ph-N2UF9FBY6w05DckELTWD9TlWkRtNR02m1YJlhIXw","y":"tC6XKvuivn-6dSIpMJ78LjM639ROvcwDACmOf5z8_B8","ext":true,"key_ops":["verify"]};
+  const LIC_KEY='__mgr_signed_license_v1_'+LIC_APP_ID;
+  const DEV_KEY='__mgr_device_id_v1_'+LIC_APP_ID;
+  const gate=document.getElementById('mgrLicenseGate');
+  const appName=document.getElementById('mgrLicenseAppName');
+  const devEl=document.getElementById('mgrDeviceId');
+  const input=document.getElementById('mgrLicenseInput');
+  const msg=document.getElementById('mgrLicenseMsg');
+  if(appName)appName.textContent=LIC_APP_NAME;
+  function setMsg(t,ok=false){if(!msg)return;msg.textContent=t||'';msg.classList.toggle('ok',!!ok)}
+  function randomDeviceId(){
+    const a=new Uint8Array(12);
+    if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(a);else for(let i=0;i<a.length;i++)a[i]=Math.floor(Math.random()*256);
+    const hex=[...a].map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
+    return 'DEV-'+hex.match(/.{1,6}/g).join('-');
+  }
+  function getDeviceId(){let d='';try{d=localStorage.getItem(DEV_KEY)||''}catch(e){}if(!d){d=randomDeviceId();try{localStorage.setItem(DEV_KEY,d)}catch(e){}}return d}
+  const deviceId=getDeviceId(); if(devEl)devEl.textContent=deviceId;
+  function b64uToBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s);return Uint8Array.from(bin,c=>c.charCodeAt(0))}
+  function bytesToText(b){return new TextDecoder().decode(b)}
+  function todayUTC(){return new Date().toISOString().slice(0,10)}
+  async function verifyLicense(code){
+    if(!window.crypto?.subtle)throw new Error('Secure browser crypto is not available. Open this app in current Chrome/Edge/Safari.');
+    const parts=String(code||'').trim().split('.'); if(parts.length!==2)throw new Error('Invalid license format.');
+    const payloadBytes=b64uToBytes(parts[0]); const sig=b64uToBytes(parts[1]);
+    let payload;try{payload=JSON.parse(bytesToText(payloadBytes))}catch(e){throw new Error('License data is invalid.');}
+    const key=await crypto.subtle.importKey('jwk',LIC_PUBLIC_JWK,{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
+    const ok=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,sig,payloadBytes);
+    if(!ok)throw new Error('License signature is not valid.');
+    if(payload.v!==1)throw new Error('Unsupported license version.');
+    if(payload.a!==LIC_APP_ID)throw new Error('This license belongs to a different app.');
+    if(payload.d!==deviceId)throw new Error('This license belongs to another device.');
+    if(payload.e && payload.e!=='0' && payload.e<todayUTC())throw new Error('This license expired on '+payload.e+'.');
+    return payload;
+  }
+  async function unlockWith(code,silent=false){
+    try{const p=await verifyLicense(code);try{localStorage.setItem(LIC_KEY,String(code).trim())}catch(e){}if(gate)gate.classList.add('mgr-hidden');setMsg('Activated for '+(p.c||'customer')+(p.e&&p.e!=='0'?' · expires '+p.e:' · lifetime'),true);return true}
+    catch(e){if(!silent)setMsg(e.message||'Activation failed.');return false}
+  }
+  async function boot(){let saved='';try{saved=localStorage.getItem(LIC_KEY)||''}catch(e){}if(saved){const ok=await unlockWith(saved,true);if(ok)return;try{localStorage.removeItem(LIC_KEY)}catch(e){}setMsg('Saved activation is no longer valid. Please activate again.')}if(gate)gate.classList.remove('mgr-hidden')}
+  document.getElementById('mgrActivateBtn')?.addEventListener('click',async()=>{const code=input?.value.trim()||'';if(!code){setMsg('Paste your activation license first.');return}const b=document.getElementById('mgrActivateBtn');if(b){b.disabled=true;b.textContent='Checking…'}await unlockWith(code,false);if(b){b.disabled=false;b.textContent='Activate App'}});
+  document.getElementById('mgrCopyDeviceBtn')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(deviceId);setMsg('Device ID copied.',true)}catch(e){const ta=document.createElement('textarea');ta.value=deviceId;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();setMsg('Device ID copied.',true)}});
+  boot();
+})();
+</script>
+
+</body>
+</html>
