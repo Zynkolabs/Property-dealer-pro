@@ -1,0 +1,156 @@
+name: Build Mobile Inspector Pro Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/build-mobile-inspector-pro.yml'
+      - 'mobile-inspector-src/**'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Prepare Mobile Inspector Android project
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf mobile-inspector-build
+          cp -R android-app mobile-inspector-build
+
+          # Reconstruct the latest Mobile Inspector v5 web app.
+          cat mobile-inspector-src/part1.b64 \
+              mobile-inspector-src/part2.b64 \
+              mobile-inspector-src/part3.b64 \
+              mobile-inspector-src/part4.b64 > /tmp/mobile-inspector.b64
+          base64 -d /tmp/mobile-inspector.b64 > /tmp/mobile-inspector.xz
+          xz -t /tmp/mobile-inspector.xz
+          xz -dc /tmp/mobile-inspector.xz > mobile-inspector-build/app/src/main/assets/index.html
+          test -s mobile-inspector-build/app/src/main/assets/index.html
+
+          # Replace the Android host activity with the Mobile Inspector host.
+          sed 's/package com.zynkolabs.mobileinspectorpro;/package com.zynkolabs.propertydealerpro;/' \
+            mobile-inspector-src/MainActivity.java \
+            > mobile-inspector-build/app/src/main/java/com/zynkolabs/propertydealerpro/MainActivity.java
+
+          # App identity and Android dependencies.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('mobile-inspector-build/app/build.gradle')
+          s=p.read_text()
+          s=s.replace("applicationId 'com.zynkolabs.propertydealerpro'", "applicationId 'com.zynkolabs.mobileinspectorpro'")
+          s=s.replace("versionName '1.0.0'", "versionName '1.0.0'")
+          if "androidx.core:core:" not in s:
+              s=s.replace("dependencies {", "dependencies {\n    implementation 'androidx.core:core:1.15.0'")
+          p.write_text(s)
+          PY
+
+          mkdir -p mobile-inspector-build/app/src/main/res/xml
+          cat > mobile-inspector-build/app/src/main/res/xml/file_paths.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <paths xmlns:android="http://schemas.android.com/apk/res/android">
+              <external-files-path name="app_pictures" path="Pictures/" />
+          </paths>
+          EOF
+
+          cat > mobile-inspector-build/app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.RECORD_AUDIO" />
+              <uses-permission android:name="android.permission.VIBRATE" />
+              <application
+                  android:allowBackup="false"
+                  android:fullBackupContent="false"
+                  android:usesCleartextTraffic="false"
+                  android:label="Mobile Inspector Pro"
+                  android:icon="@drawable/ic_launcher"
+                  android:roundIcon="@drawable/ic_launcher"
+                  android:theme="@style/AppTheme">
+                  <provider
+                      android:name="androidx.core.content.FileProvider"
+                      android:authorities="${applicationId}.fileprovider"
+                      android:exported="false"
+                      android:grantUriPermissions="true">
+                      <meta-data
+                          android:name="android.support.FILE_PROVIDER_PATHS"
+                          android:resource="@xml/file_paths" />
+                  </provider>
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:screenOrientation="portrait">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat > mobile-inspector-build/app/src/main/res/drawable/ic_launcher.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="108" android:viewportHeight="108">
+              <path android:fillColor="#0B1C23" android:pathData="M0,0h108v108h-108z" />
+              <path android:fillColor="#16B978" android:pathData="M31,14h46c6.6,0 12,5.4 12,12v56c0,6.6 -5.4,12 -12,12H31c-6.6,0 -12,-5.4 -12,-12V26c0,-6.6 5.4,-12 12,-12z" />
+              <path android:fillColor="#FFFFFF" android:pathData="M36,29h36c3.3,0 6,2.7 6,6v34c0,3.3 -2.7,6 -6,6H36c-3.3,0 -6,-2.7 -6,-6V35c0,-3.3 2.7,-6 6,-6z" />
+              <path android:fillColor="#0B1C23" android:pathData="M43,52l8,8 16,-18 5,4 -21,24 -13,-13z" />
+              <path android:fillColor="#0B1C23" android:pathData="M49,82h10a2,2 0,1 1,0 4H49a2,2 0,1 1,0 -4z" />
+          </vector>
+          EOF
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK 35
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build installable APK
+        working-directory: mobile-inspector-build
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Publish APK to repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p built-apks
+          cp mobile-inspector-build/app/build/outputs/apk/debug/app-debug.apk built-apks/Mobile-Inspector-Pro-v1.0.apk
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f built-apks/Mobile-Inspector-Pro-v1.0.apk
+          if git diff --cached --quiet; then
+            echo 'APK unchanged'
+          else
+            git commit -m 'Build Mobile Inspector Pro v1.0 APK [skip ci]'
+            git push
+          fi
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mobile-Inspector-Pro-v1.0
+          path: mobile-inspector-build/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
