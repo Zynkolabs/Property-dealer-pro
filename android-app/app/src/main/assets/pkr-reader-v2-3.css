@@ -1,0 +1,27 @@
+/* Zynko Property Dealer Pro v2.3 — clean Pakistan amount reader */
+.pkrReadout{
+  display:block!important;
+  margin:6px 0 0!important;
+  padding:0 2px!important;
+  min-height:18px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  line-height:1.25!important;
+}
+.pkrReadout.hasValue{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.pkrReadout .pkrExact{display:none!important;}
+.pkrReadout .pkrWords{
+  display:block!important;
+  color:#111111!important;
+  font-weight:950!important;
+  text-align:left!important;
+  letter-spacing:.01em!important;
+}
+.pkrReadout.zero{display:none!important;}
