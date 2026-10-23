@@ -1,0 +1,21 @@
+/* Property Dealer Pro v2.4 — proportional readability scale across the entire app */
+body{font-size:16px!important}
+.brand{font-size:27px!important}.brandSub{font-size:12.5px!important}.premiumBadge{font-size:10.5px!important;padding:8px 10px!important}
+.heroStat b{font-size:15px!important}.heroStat span{font-size:8.5px!important}
+.sectionTitle h2{font-size:20.5px!important}.muted{font-size:12.5px!important}.small{font-size:11.5px!important}
+.moduleGrid{gap:9px!important}.module{min-height:92px!important;padding:12px!important;border-radius:20px!important}.modIcon{width:40px!important;height:40px!important;border-radius:14px!important;font-size:22px!important}.module b{margin-top:7px!important;font-size:14.5px!important}.module span{margin-top:2px!important;font-size:10px!important;line-height:1.3!important}
+.insight{padding:15px!important}.insightIcon{width:43px!important;height:43px!important;font-size:22px!important}.insight b{font-size:15px!important}.insight p{font-size:12px!important}
+.quickRow{gap:8px!important}.quick{padding:11px 5px!important;border-radius:17px!important;font-size:10.8px!important;line-height:1.18!important}.quick i{font-size:22px!important;margin-bottom:3px!important}
+.toolbar{gap:8px!important;padding-bottom:8px!important}.pill{padding:8px 12px!important;font-size:11.5px!important}
+.list{gap:10px!important}.listCard{padding:15px!important}.rowTop{gap:12px!important}.rowTitle{font-size:15.5px!important}.rowMeta{font-size:11.5px!important;line-height:1.48!important;margin-top:4px!important}.money{font-size:17px!important}.tag{padding:5px 9px!important;font-size:10.5px!important;margin-top:5px!important}
+.metric{padding:15px!important}.metric span,.metric small{font-size:10.5px!important}.metric b{font-size:20px!important}
+.btn{border-radius:15px!important;padding:11px 14px!important;font-size:12.5px!important}.tiny{padding:9px 11px!important;border-radius:12px!important;font-size:11.5px!important}
+label{font-size:12px!important;margin:11px 0 6px!important}input,select,textarea{font-size:15.5px!important;padding:13px!important;border-radius:15px!important;min-height:48px!important}textarea{min-height:96px!important}
+.grid2,.grid3{gap:10px!important}.actions{gap:8px!important;margin-top:12px!important}.actions .btn{min-width:82px!important}
+.backHead{gap:10px!important;margin:14px 2px 10px!important}.backHead button{width:42px!important;height:42px!important;border-radius:14px!important;font-size:20px!important}.backHead h2{font-size:22px!important}.backHead small{font-size:11.5px!important}
+.sheet{padding:20px 17px calc(22px + env(safe-area-inset-bottom))!important}.sheet h3{font-size:24px!important;margin-bottom:14px!important}.sheet label{font-size:12px!important}.sheet input,.sheet select,.sheet textarea{font-size:15.5px!important}
+.settingRow{padding:14px 15px!important}.settingRow b{font-size:14.5px!important}.settingRow span{font-size:11px!important}
+.navBtn{padding:8px 4px!important;font-size:10.5px!important}.navBtn i{font-size:21px!important;margin-bottom:2px!important}.bottomNav{padding-top:7px!important}.navInner{gap:5px!important}
+.fab{width:58px!important;height:58px!important;border-radius:20px!important;font-size:30px!important;right:18px!important;bottom:86px!important}
+.empty{font-size:12.5px!important;padding:30px 18px!important}.dataBox{padding:16px!important}
+@media(max-width:390px){.brand{font-size:25px!important}.module{min-height:88px!important}.module b{font-size:14px!important}.module span{font-size:9.7px!important}.quick{font-size:10.5px!important}.navBtn{font-size:10px!important}}
