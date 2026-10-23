@@ -1,12 +1,17 @@
 package com.zynkolabs.propertydealerpro;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -24,6 +29,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Locale;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
@@ -32,11 +39,21 @@ public class MainActivity extends Activity {
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
     private WebViewAssetLoader assetLoader;
+    private AndroidBridge androidBridge;
 
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         webView = new WebView(this);
+        webView.setBackgroundColor(Color.TRANSPARENT);
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, true);
+        }
+        WebView.setWebContentsDebuggingEnabled(false);
         setContentView(webView);
 
         assetLoader = new WebViewAssetLoader.Builder()
@@ -52,11 +69,22 @@ public class MainActivity extends Activity {
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setSupportMultipleWindows(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setMediaPlaybackRequiresUserGesture(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
+        settings.setSupportZoom(false);
+        settings.setTextZoom(100);
+        settings.setLoadsImagesAutomatically(true);
+        settings.setDefaultTextEncodingName("UTF-8");
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            settings.setOffscreenPreRaster(true);
+        }
 
-        webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
+        androidBridge = new AndroidBridge();
+        // "Android" is used by ZK-ONE licensing. "AndroidBridge" keeps native backup compatibility.
+        webView.addJavascriptInterface(androidBridge, "Android");
+        webView.addJavascriptInterface(androidBridge, "AndroidBridge");
         webView.setWebViewClient(new AppWebViewClient());
         webView.setWebChromeClient(new AppWebChromeClient());
         webView.loadUrl(APP_ORIGIN + "/assets/index.html");
@@ -100,13 +128,13 @@ public class MainActivity extends Activity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            if (url.startsWith(APP_ORIGIN + "/")) injectAndroidBackupBridge();
+            if (url.startsWith(APP_ORIGIN + "/")) injectNativeEnhancements();
         }
     }
 
     private class AppWebChromeClient extends WebChromeClient {
         @Override
-        public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> callback, FileChooserParams fileChooserParams) {
+        public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
             if (filePathCallback != null) filePathCallback.onReceiveValue(null);
             filePathCallback = callback;
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -127,6 +155,7 @@ public class MainActivity extends Activity {
                     v.destroy();
                     return true;
                 }
+
                 @SuppressWarnings("deprecation")
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView v, String url) {
@@ -142,22 +171,37 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void injectAndroidBackupBridge() {
-        String script = "(function(){if(!window.AndroidBridge||typeof window.AndroidBridge.saveBackup!=='function')return;" +
-                "window.backupData=function(){var createdAt=new Date().toISOString();var payload={app:'Property Dealer Pro',appId:BACKUP_APP_ID,storageKey:KEY,backupVersion:BACKUP_VERSION,createdAt:createdAt,data:state};" +
-                "try{var filename='Property_Dealer_Pro_Backup_'+today()+'.json';AndroidBridge.saveBackup(filename,JSON.stringify(payload,null,2));localStorage.setItem(BACKUP_META_KEY,createdAt);updateBackupStatus();showSimpleToast('Backup saved to Downloads');}" +
-                "catch(e){alert('Could not create backup on this device.');}};" +
-                "var h=document.querySelector('.mgr-license-help');if(h)h.innerHTML='<b>Important:</b> the license is tied to this app and this Device ID. If app data is cleared or the app is reinstalled, a new activation may be required.';" +
+    private void injectNativeEnhancements() {
+        String script = "(function(){" +
+                "if(window.AndroidBridge&&typeof AndroidBridge.saveBackup==='function'){" +
+                "window.backupData=async function(){try{" +
+                "state.lastBackup=new Date().toISOString();" +
+                "if(typeof dbSet==='function')await dbSet(STATE_KEY,state);" +
+                "var payload={app:'Property Dealer Pro All-in-One',appId:'property_dealer_pro',backupVersion:1,createdAt:state.lastBackup,data:state};" +
+                "AndroidBridge.saveBackup('Property_Dealer_Pro_Backup_'+today()+'.json',JSON.stringify(payload,null,2));" +
+                "if(typeof updateBackupStatus==='function')updateBackupStatus();" +
+                "if(typeof toast==='function')toast('Complete backup saved to Downloads');" +
+                "}catch(e){if(typeof toast==='function')toast('Backup failed');}};" +
+                "}" +
+                "document.documentElement.style.webkitTapHighlightColor='transparent';" +
                 "})();";
         webView.evaluateJavascript(script, null);
     }
 
     public class AndroidBridge {
+        private String cachedDeviceId;
+
+        @JavascriptInterface
+        public String getDeviceId() {
+            if (cachedDeviceId == null) cachedDeviceId = buildStableDeviceId();
+            return cachedDeviceId;
+        }
+
         @JavascriptInterface
         public void saveBackup(String requestedName, String json) {
             String filename = sanitizeFilename(requestedName);
             try {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     ContentValues values = new ContentValues();
                     values.put(MediaStore.Downloads.DISPLAY_NAME, filename);
                     values.put(MediaStore.Downloads.MIME_TYPE, "application/json");
@@ -188,9 +232,27 @@ public class MainActivity extends Activity {
         }
     }
 
+    private String buildStableDeviceId() {
+        try {
+            String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            if (androidId == null || androidId.trim().isEmpty()) {
+                androidId = Build.MANUFACTURER + "|" + Build.MODEL + "|" + Build.DEVICE;
+            }
+            String seed = "zynko-property-dealer-pro|" + androidId;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(seed.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hash) hex.append(String.format(Locale.US, "%02X", b & 0xFF));
+            String h = hex.substring(0, 24);
+            return "DEV-" + h.substring(0, 6) + "-" + h.substring(6, 12) + "-" + h.substring(12, 18) + "-" + h.substring(18, 24);
+        } catch (Exception e) {
+            return "DEV-000000-000000-000000-000000";
+        }
+    }
+
     private String sanitizeFilename(String name) {
         String clean = name == null ? "Property_Dealer_Pro_Backup.json" : name.replaceAll("[^A-Za-z0-9._-]", "_");
-        if (!clean.toLowerCase().endsWith(".json")) clean += ".json";
+        if (!clean.toLowerCase(Locale.US).endsWith(".json")) clean += ".json";
         return clean;
     }
 
@@ -220,7 +282,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (webView != null) {
+            webView.removeJavascriptInterface("Android");
             webView.removeJavascriptInterface("AndroidBridge");
+            webView.stopLoading();
             webView.destroy();
         }
         super.onDestroy();
