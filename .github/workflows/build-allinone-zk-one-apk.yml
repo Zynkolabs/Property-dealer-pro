@@ -35,7 +35,7 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Reconstruct premium app and inject v2.3 fixes
+      - name: Reconstruct premium app and inject v2.4 fixes
         shell: bash
         run: |
           set -euo pipefail
@@ -48,14 +48,14 @@ jobs:
           grep -q "APP='property_dealer_pro'" android-app/app/src/main/assets/index.html
           grep -q 'ZK-ONE' android-app/app/src/main/assets/index.html
           grep -q 'pkrWords' android-app/app/src/main/assets/index.html
-          python3 -c "from pathlib import Path; p=Path('android-app/app/src/main/assets/index.html'); s=p.read_text(); s=s.replace('</head>','<link rel=\"stylesheet\" href=\"mobile-scroll-fix.css\"><link rel=\"stylesheet\" href=\"premium-popup-fix.css\"><link rel=\"stylesheet\" href=\"pkr-reader-v2-3.css\"></head>',1); s=s.replace('</body>','<script src=\"premium-popup-fix.js\"></script><script src=\"pkr-reader-v2-3.js\"></script></body>',1); p.write_text(s)"
+          python3 -c "from pathlib import Path; p=Path('android-app/app/src/main/assets/index.html'); s=p.read_text(); s=s.replace('</head>','<link rel=\"stylesheet\" href=\"mobile-scroll-fix.css\"><link rel=\"stylesheet\" href=\"premium-popup-fix.css\"><link rel=\"stylesheet\" href=\"pkr-reader-v2-3.css\"><link rel=\"stylesheet\" href=\"global-scale-v24.css\"></head>',1); s=s.replace('</body>','<script src=\"premium-popup-fix.js\"></script><script src=\"pkr-reader-v2-3.js\"></script><script src=\"remove-favorite-v24.js\"></script></body>',1); p.write_text(s)"
           grep -q 'mobile-scroll-fix.css' android-app/app/src/main/assets/index.html
           grep -q 'premium-popup-fix.css' android-app/app/src/main/assets/index.html
-          grep -q 'premium-popup-fix.js' android-app/app/src/main/assets/index.html
           grep -q 'pkr-reader-v2-3.css' android-app/app/src/main/assets/index.html
-          grep -q 'pkr-reader-v2-3.js' android-app/app/src/main/assets/index.html
-          grep -q 'font-weight:950' android-app/app/src/main/assets/pkr-reader-v2-3.css
-          grep -q "box.innerHTML=''" android-app/app/src/main/assets/pkr-reader-v2-3.js
+          grep -q 'global-scale-v24.css' android-app/app/src/main/assets/index.html
+          grep -q 'remove-favorite-v24.js' android-app/app/src/main/assets/index.html
+          grep -q 'font-size:14.5px' android-app/app/src/main/assets/global-scale-v24.css
+          grep -q "'Sold/Rented'" android-app/app/src/main/assets/remove-favorite-v24.js
 
       - name: Restore stable signing key
         shell: bash
@@ -77,12 +77,12 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='com.zynkolabs.propertydealerpro'"
           mkdir -p release-package
-          cp "$APK" release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_3_PKR_BLACK_BOLD.apk
-          sha256sum release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_3_PKR_BLACK_BOLD.apk > release-package/SHA256.txt
+          cp "$APK" release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_4_GLOBAL_SCALE.apk
+          sha256sum release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_4_GLOBAL_SCALE.apk > release-package/SHA256.txt
 
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: Property-Dealer-Pro-AllInOne-ZK-ONE-v2.3-PKR-Black-Bold-APK
+          name: Property-Dealer-Pro-AllInOne-ZK-ONE-v2.4-Global-Scale-APK
           path: release-package/
           if-no-files-found: error
