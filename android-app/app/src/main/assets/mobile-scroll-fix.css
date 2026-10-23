@@ -1,0 +1,36 @@
+html,body{
+  min-height:100% !important;
+  height:auto !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior-y:auto !important;
+}
+body{
+  position:relative !important;
+  touch-action:pan-y pinch-zoom !important;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom)) !important;
+}
+main,.app,.app-shell,.page,.screen,.view,.content,.main-content,.workspace,.panel,.form-wrap{
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+}
+.modal,.modal-content,.sheet,.sheet-content,.dialog,[role="dialog"],.form-modal,.drawer,.popup,.overlay-content{
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior:contain !important;
+  touch-action:pan-y !important;
+  max-height:calc(100dvh - 12px) !important;
+  padding-bottom:calc(120px + env(safe-area-inset-bottom)) !important;
+}
+form{
+  overflow:visible !important;
+  max-height:none !important;
+}
+@media (max-width:768px){
+  html,body{width:100% !important;}
+  .modal,.modal-content,.sheet,.sheet-content,.dialog,[role="dialog"],.form-modal,.drawer,.popup,.overlay-content{
+    max-height:calc(100dvh - 4px) !important;
+  }
+}
