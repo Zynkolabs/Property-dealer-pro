@@ -55,7 +55,7 @@ jobs:
           grep -q 'pkr-reader-v2-3.css' android-app/app/src/main/assets/index.html
           grep -q 'pkr-reader-v2-3.js' android-app/app/src/main/assets/index.html
           grep -q 'font-weight:950' android-app/app/src/main/assets/pkr-reader-v2-3.css
-          ! grep -qi 'Enter amount' android-app/app/src/main/assets/pkr-reader-v2-3.js
+          grep -q "box.innerHTML=''" android-app/app/src/main/assets/pkr-reader-v2-3.js
 
       - name: Restore stable signing key
         shell: bash
