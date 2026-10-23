@@ -137,11 +137,23 @@ public class MainActivity extends Activity {
         public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
             if (filePathCallback != null) filePathCallback.onReceiveValue(null);
             filePathCallback = callback;
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("application/json");
-            intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/json", "text/json", "text/plain"});
-            startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+            try {
+                Intent intent = params != null ? params.createIntent() : new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+            } catch (Exception firstError) {
+                try {
+                    Intent fallback = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    fallback.addCategory(Intent.CATEGORY_OPENABLE);
+                    fallback.setType("*/*");
+                    fallback.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    startActivityForResult(fallback, FILE_CHOOSER_REQUEST);
+                } catch (Exception secondError) {
+                    filePathCallback.onReceiveValue(null);
+                    filePathCallback = null;
+                    Toast.makeText(MainActivity.this, "No file picker available", Toast.LENGTH_SHORT).show();
+                }
+            }
             return true;
         }
 
@@ -264,10 +276,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_CHOOSER_REQUEST && filePathCallback != null) {
-            Uri[] results = null;
-            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
-                results = new Uri[]{data.getData()};
-            }
+            Uri[] results = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
             filePathCallback.onReceiveValue(results);
             filePathCallback = null;
         }
