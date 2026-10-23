@@ -56,6 +56,10 @@ jobs:
           grep -q 'remove-favorite-v24.js' android-app/app/src/main/assets/index.html
           grep -q 'font-size:14.5px' android-app/app/src/main/assets/global-scale-v24.css
           grep -q "'Sold/Rented'" android-app/app/src/main/assets/remove-favorite-v24.js
+          sed -i 's/versionCode 5/versionCode 6/' android-app/app/build.gradle
+          sed -i "s/versionName '2.3.0'/versionName '2.4.0'/" android-app/app/build.gradle
+          grep -q 'versionCode 6' android-app/app/build.gradle
+          grep -q "versionName '2.4.0'" android-app/app/build.gradle
 
       - name: Restore stable signing key
         shell: bash
@@ -76,6 +80,7 @@ jobs:
           test -f "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='com.zynkolabs.propertydealerpro'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "versionCode='6'"
           mkdir -p release-package
           cp "$APK" release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_4_GLOBAL_SCALE.apk
           sha256sum release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_4_GLOBAL_SCALE.apk > release-package/SHA256.txt
