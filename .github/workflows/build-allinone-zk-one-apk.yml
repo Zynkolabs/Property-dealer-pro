@@ -35,7 +35,7 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Reconstruct exact premium app source
+      - name: Reconstruct exact premium app source and add mobile scroll fix
         shell: bash
         run: |
           set -euo pipefail
@@ -43,11 +43,63 @@ jobs:
           cat build-assets/pdp-allinone-20261024.gz.b64.part* | base64 -d | gzip -dc > android-app/app/src/main/assets/index.html
           ACTUAL=$(sha256sum android-app/app/src/main/assets/index.html | awk '{print $1}')
           EXPECTED='221b3c1042d44bc07cd65a90ea7a164b1df7159f74d41833a1b750d289eb98c0'
-          echo "Source SHA256: $ACTUAL"
+          echo "Source SHA256 before patch: $ACTUAL"
           test "$ACTUAL" = "$EXPECTED"
           grep -q "APP='property_dealer_pro'" android-app/app/src/main/assets/index.html
           grep -q 'ZK-ONE' android-app/app/src/main/assets/index.html
           grep -q 'pkrWords' android-app/app/src/main/assets/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android-app/app/src/main/assets/index.html')
+          s = p.read_text(encoding='utf-8')
+          patch = r'''
+<style id="zynko-mobile-scroll-fix">
+html,body{
+  min-height:100% !important;
+  height:auto !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior-y:auto !important;
+}
+body{
+  position:relative !important;
+  touch-action:pan-y pinch-zoom !important;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom)) !important;
+}
+main,.app,.app-shell,.page,.screen,.view,.content,.main-content,.workspace,.panel,.form-wrap{
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+}
+.modal,.modal-content,.sheet,.sheet-content,.dialog,[role="dialog"],.form-modal,.drawer,.popup,.overlay-content{
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior:contain !important;
+  touch-action:pan-y !important;
+  max-height:calc(100dvh - 12px) !important;
+  padding-bottom:calc(120px + env(safe-area-inset-bottom)) !important;
+}
+form{
+  overflow:visible !important;
+  max-height:none !important;
+}
+@media (max-width:768px){
+  html,body{width:100% !important;}
+  .modal,.modal-content,.sheet,.sheet-content,.dialog,[role="dialog"],.form-modal,.drawer,.popup,.overlay-content{
+    max-height:calc(100dvh - 4px) !important;
+  }
+}
+</style>
+'''
+          if 'id="zynko-mobile-scroll-fix"' not in s:
+              if '</head>' in s:
+                  s = s.replace('</head>', patch + '\n</head>', 1)
+              else:
+                  s = patch + s
+          p.write_text(s, encoding='utf-8')
+          PY
+          grep -q 'zynko-mobile-scroll-fix' android-app/app/src/main/assets/index.html
 
       - name: Restore stable signing key
         shell: bash
@@ -69,12 +121,12 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='com.zynkolabs.propertydealerpro'"
           mkdir -p release-package
-          cp "$APK" release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2.apk
-          sha256sum release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2.apk > release-package/SHA256.txt
+          cp "$APK" release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_1_SCROLL_FIXED.apk
+          sha256sum release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_1_SCROLL_FIXED.apk > release-package/SHA256.txt
 
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: Property-Dealer-Pro-AllInOne-ZK-ONE-v2-APK
+          name: Property-Dealer-Pro-AllInOne-ZK-ONE-v2.1-Scroll-Fixed-APK
           path: release-package/
           if-no-files-found: error
