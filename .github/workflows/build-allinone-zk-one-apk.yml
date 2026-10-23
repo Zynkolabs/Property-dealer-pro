@@ -1,0 +1,80 @@
+name: Build Property Dealer Pro All-in-One ZK-ONE APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'build-assets/pdp-allinone-20261024.gz.b64.part*'
+      - 'android-app/**'
+      - '.github/workflows/build-allinone-zk-one-apk.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android 35 SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Reconstruct exact premium app source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android-app/app/src/main/assets
+          cat build-assets/pdp-allinone-20261024.gz.b64.part* | base64 -d | gzip -dc > android-app/app/src/main/assets/index.html
+          ACTUAL=$(sha256sum android-app/app/src/main/assets/index.html | awk '{print $1}')
+          EXPECTED='221b3c1042d44bc07cd65a90ea7a164b1df7159f74d41833a1b750d289eb98c0'
+          echo "Source SHA256: $ACTUAL"
+          test "$ACTUAL" = "$EXPECTED"
+          grep -q "APP='property_dealer_pro'" android-app/app/src/main/assets/index.html
+          grep -q 'ZK-ONE' android-app/app/src/main/assets/index.html
+          grep -q 'pkrWords' android-app/app/src/main/assets/index.html
+
+      - name: Restore stable signing key
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d android-app/zynko-property-release.jks.b64 > android-app/zynko-property-release.jks
+          test "$(sha256sum android-app/zynko-property-release.jks | awk '{print $1}')" = 'a803c620829a6c9c3df1fe1195b99195994876fe4092ebd864c3a5dfb3465e88'
+
+      - name: Build signed release APK
+        working-directory: android-app
+        run: gradle :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Verify APK signature and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='android-app/app/build/outputs/apk/release/app-release.apk'
+          test -f "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='com.zynkolabs.propertydealerpro'"
+          mkdir -p release-package
+          cp "$APK" release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2.apk
+          sha256sum release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2.apk > release-package/SHA256.txt
+
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Property-Dealer-Pro-AllInOne-ZK-ONE-v2-APK
+          path: release-package/
+          if-no-files-found: error
