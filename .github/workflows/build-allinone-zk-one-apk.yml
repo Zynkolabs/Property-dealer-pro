@@ -35,7 +35,7 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Reconstruct premium app and inject v2.6 fixes
+      - name: Reconstruct premium app and inject v2.7 fixes
         shell: bash
         run: |
           set -euo pipefail
@@ -48,7 +48,7 @@ jobs:
           grep -q "APP='property_dealer_pro'" android-app/app/src/main/assets/index.html
           grep -q 'ZK-ONE' android-app/app/src/main/assets/index.html
           grep -q 'pkrWords' android-app/app/src/main/assets/index.html
-          python3 -c "from pathlib import Path; p=Path('android-app/app/src/main/assets/index.html'); s=p.read_text(); s=s.replace('</head>','<link rel=\"stylesheet\" href=\"mobile-scroll-fix.css\"><link rel=\"stylesheet\" href=\"premium-popup-fix.css\"><link rel=\"stylesheet\" href=\"pkr-reader-v2-3.css\"><link rel=\"stylesheet\" href=\"global-scale-v24.css\"><link rel=\"stylesheet\" href=\"premium-select-docs-v25.css\"><link rel=\"stylesheet\" href=\"premium-typography-v26.css\"></head>',1); s=s.replace('</body>','<script src=\"premium-popup-fix.js\"></script><script src=\"pkr-reader-v2-3.js\"></script><script src=\"remove-favorite-v24.js\"></script><script src=\"premium-select-docs-v25.js\"></script></body>',1); p.write_text(s)"
+          python3 -c "from pathlib import Path; p=Path('android-app/app/src/main/assets/index.html'); s=p.read_text(); s=s.replace('</head>','<link rel=\"stylesheet\" href=\"mobile-scroll-fix.css\"><link rel=\"stylesheet\" href=\"premium-popup-fix.css\"><link rel=\"stylesheet\" href=\"pkr-reader-v2-3.css\"><link rel=\"stylesheet\" href=\"global-scale-v24.css\"><link rel=\"stylesheet\" href=\"premium-select-docs-v25.css\"><link rel=\"stylesheet\" href=\"premium-typography-v26.css\"><link rel=\"stylesheet\" href=\"form-fit-v27.css\"></head>',1); s=s.replace('</body>','<script src=\"premium-popup-fix.js\"></script><script src=\"pkr-reader-v2-3.js\"></script><script src=\"remove-favorite-v24.js\"></script><script src=\"premium-select-docs-v25.js\"></script></body>',1); p.write_text(s)"
           grep -q 'mobile-scroll-fix.css' android-app/app/src/main/assets/index.html
           grep -q 'premium-popup-fix.css' android-app/app/src/main/assets/index.html
           grep -q 'pkr-reader-v2-3.css' android-app/app/src/main/assets/index.html
@@ -56,14 +56,15 @@ jobs:
           grep -q 'premium-select-docs-v25.css' android-app/app/src/main/assets/index.html
           grep -q 'premium-select-docs-v25.js' android-app/app/src/main/assets/index.html
           grep -q 'premium-typography-v26.css' android-app/app/src/main/assets/index.html
-          grep -q 'body{font-size:var(--pdp-body)' android-app/app/src/main/assets/premium-typography-v26.css
-          grep -q '.pdpPickerOption' android-app/app/src/main/assets/premium-typography-v26.css
+          grep -q 'form-fit-v27.css' android-app/app/src/main/assets/index.html
+          grep -q 'max-height:calc(100dvh - 8px)' android-app/app/src/main/assets/form-fit-v27.css
+          grep -q 'position:sticky' android-app/app/src/main/assets/form-fit-v27.css
           grep -q 'handleDocumentFiles' android-app/app/src/main/assets/premium-select-docs-v25.js
           node --check android-app/app/src/main/assets/premium-select-docs-v25.js
-          sed -i 's/versionCode 5/versionCode 8/' android-app/app/build.gradle
-          sed -i "s/versionName '2.3.0'/versionName '2.6.0'/" android-app/app/build.gradle
-          grep -q 'versionCode 8' android-app/app/build.gradle
-          grep -q "versionName '2.6.0'" android-app/app/build.gradle
+          sed -i 's/versionCode 5/versionCode 9/' android-app/app/build.gradle
+          sed -i "s/versionName '2.3.0'/versionName '2.7.0'/" android-app/app/build.gradle
+          grep -q 'versionCode 9' android-app/app/build.gradle
+          grep -q "versionName '2.7.0'" android-app/app/build.gradle
 
       - name: Restore stable signing key
         shell: bash
@@ -84,14 +85,14 @@ jobs:
           test -f "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='com.zynkolabs.propertydealerpro'"
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "versionCode='8'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "versionCode='9'"
           mkdir -p release-package
-          cp "$APK" release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_6_PREMIUM_BALANCED.apk
-          sha256sum release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_6_PREMIUM_BALANCED.apk > release-package/SHA256.txt
+          cp "$APK" release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_7_FORM_FIT.apk
+          sha256sum release-package/Property_Dealer_Pro_AllInOne_ZK_ONE_v2_7_FORM_FIT.apk > release-package/SHA256.txt
 
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: Property-Dealer-Pro-AllInOne-ZK-ONE-v2.6-Premium-Balanced-APK
+          name: Property-Dealer-Pro-AllInOne-ZK-ONE-v2.7-Form-Fit-APK
           path: release-package/
           if-no-files-found: error
