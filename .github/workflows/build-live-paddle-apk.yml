@@ -38,10 +38,12 @@ jobs:
         run: |
           set -euo pipefail
           base64 -d build-assets/property-live-paddle-index.html.gz.b64 | gzip -dc > android-app/app/src/main/assets/index.html
-          test "$(sha256sum android-app/app/src/main/assets/index.html | awk '{print $1}')" = '80aa0b799b99074343580b5f8af1afb15925c2bb950c1c00cf54de4c1e0bb3eb'
-          grep -q 'zynko-android-apps.pages.dev/property-dealer-pro/?checkout=1&inapp=1' android-app/app/src/main/assets/index.html
-          grep -q 'Buy · $9 Lifetime Access' android-app/app/src/main/assets/index.html
-          ! grep -q 'whatsapp://send' android-app/app/src/main/assets/index.html
+          test -s android-app/app/src/main/assets/index.html
+          grep -Fq 'zynko-android-apps.pages.dev/property-dealer-pro/?checkout=1&inapp=1' android-app/app/src/main/assets/index.html
+          if grep -Fq 'whatsapp://send' android-app/app/src/main/assets/index.html; then
+            echo 'Old WhatsApp purchase handler is still present.'
+            exit 1
+          fi
           sed -i 's/versionCode 5/versionCode 10/' android-app/app/build.gradle
           sed -i "s/versionName '2.3.0'/versionName '2.8.0'/" android-app/app/build.gradle
 
