@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'build-assets/property-live-paddle-index.html.gz.b64'
+      - '.github/workflows/build-live-paddle-apk.yml'
   workflow_dispatch:
 
 jobs:
