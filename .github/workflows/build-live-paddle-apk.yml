@@ -1,0 +1,76 @@
+name: Build Property Dealer Pro Live Paddle APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'build-assets/property-live-paddle-index.html.gz.b64'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android 35 SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Install Live Paddle app page
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d build-assets/property-live-paddle-index.html.gz.b64 | gzip -dc > android-app/app/src/main/assets/index.html
+          test "$(sha256sum android-app/app/src/main/assets/index.html | awk '{print $1}')" = '80aa0b799b99074343580b5f8af1afb15925c2bb950c1c00cf54de4c1e0bb3eb'
+          grep -q 'zynko-android-apps.pages.dev/property-dealer-pro/?checkout=1&inapp=1' android-app/app/src/main/assets/index.html
+          grep -q 'Buy · $9 Lifetime Access' android-app/app/src/main/assets/index.html
+          ! grep -q 'whatsapp://send' android-app/app/src/main/assets/index.html
+          sed -i 's/versionCode 5/versionCode 10/' android-app/app/build.gradle
+          sed -i "s/versionName '2.3.0'/versionName '2.8.0'/" android-app/app/build.gradle
+
+      - name: Restore stable signing key
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d android-app/zynko-property-release.jks.b64 > android-app/zynko-property-release.jks
+          test "$(sha256sum android-app/zynko-property-release.jks | awk '{print $1}')" = 'a803c620829a6c9c3df1fe1195b99195994876fe4092ebd864c3a5dfb3465e88'
+
+      - name: Build signed release APK
+        working-directory: android-app
+        run: gradle :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Verify and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='android-app/app/build/outputs/apk/release/app-release.apk'
+          test -f "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='com.zynkolabs.propertydealerpro'"
+          mkdir -p release-package
+          cp "$APK" release-package/Property_Dealer_Pro_LIVE_PADDLE_CHECKOUT.apk
+          sha256sum release-package/Property_Dealer_Pro_LIVE_PADDLE_CHECKOUT.apk > release-package/SHA256.txt
+
+      - name: Upload Live Paddle APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Property-Dealer-Pro-Live-Paddle-APK
+          path: release-package/
+          if-no-files-found: error
